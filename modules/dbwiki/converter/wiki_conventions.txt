@@ -1,0 +1,51 @@
+
+* Paragraph is delimited by empty lines. It can contain as well blocks
+  or lists (which can have empty lines inside them).
+
+* Lists are denoted by bullets and indentation.
+  Bullets can be: (*|1.|a.|A.|i.|I.), the items of the same list have
+  the same bullet and indentation. A list item can contain sublists,
+  blocks, empty lines, etc. A slash (/) is used to end a list, if
+  there is ambiguity.
+
+* Blocks are denoted by a starting line (--xxx) and an ending line
+  (----). Blocks are:
+
+    * programlisting (--code), literallayout (--ll), screen (--scr)
+
+    * figure (--fig title), example (--xmp title)
+
+    * admonitions: --n or --note, --c or --caution, --w or --warning,
+      --tip, --imp or --important,
+
+
+* Inline marks are denoted by special characters and are contained
+  inside a single line (cannot span multiple lines). They are:
+
+    * Links: [link_name > href]
+      [...] should be escaped like this: \[...]
+
+    * Footnotes: [/...]
+
+    * Menu items: [Options->General->Save (Ctrl-S)]
+
+    * Prompt and command are separated by '!#' in a single line:
+      prompt!# command
+      (escaped like this '\!#')
+
+    * Filename: ~filename~, emphasis: _word_
+
+    * Images: [< filename < width < alt ]
+
+    * xref: [> section_id ]
+
+* CDATA sections are denoted by [[xyz]]. This markup can be escaped
+  by preceding it by \ (like \[[xyz]]). As a shortcut,
+    --code--
+    xyz
+    ----
+  is equivalent to:
+    --code
+    [[xyz]]
+    ----
+  The same can be done for --screen, --scr, and --ll.

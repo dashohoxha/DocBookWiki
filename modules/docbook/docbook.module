@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * DocBooks are Books that can be exported into DocBook/XML format.
+ * It is also possible to import simple DocBook documents and
+ * to convert Books to DocBooks.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function first_help($path, $arg) {
+  if ($path == 'admin/help#first') {
+    return t('A demonstration module.');
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+/*
+function docbook_menu() {
+  $items['admin/content/docbook'] = array(
+    'title' => 'DocBooks',
+    'description' => "Manage your site's book outlines.",
+    'page callback' => 'book_admin_overview',
+    'access arguments' => array('administer book outlines'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'docbook.admin.inc',
+  );
+  return $items
+}
+*/

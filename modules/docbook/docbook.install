@@ -1,0 +1,1486 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the docbook module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function docbook_install() {
+  // Add the node types.
+  _docbook_install_create_type_docbook();
+  _docbook_install_create_type_docbook_section();
+
+  foreach (_docbook_install_fields() as $field) {
+    field_create_field($field);
+  }
+  foreach (_docbook_install_instancies() as $instance) {
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function docbook_uninstall() {
+
+  foreach ( array('docbook_section', 'docbook') as $type ) {
+    // gather all nodes created
+    $sql = 'SELECT nid FROM {node} n WHERE n.type = :type';
+    $result = db_query($sql, array(':type' => $type));
+    $nids = array();
+    foreach ($result as $row) {
+      $nids[] = $row->nid;
+    }
+    // delete all the docbook_section nodes at once
+    node_delete_multiple($nids);
+
+    // remove peristant variables that control settings
+    //variable_del('additional_settings__active_tab_' . $type);
+    variable_del('node_preview_' . $type);
+    variable_del('node_options_' . $type);
+    variable_del('node_submitted_' . $type);
+    variable_del('menu_options_' . $type);
+    variable_del('menu_parent_' . $type);
+  }
+
+  // delete fields
+  foreach ( _docbook_install_fields() as $field ) {
+    field_delete_field($field['field_name']);
+  }
+
+  // delete instances
+  $instances = field_info_instances('node', 'docbook_section');
+  foreach ($instances as $instance_name => $instance) {
+    field_delete_instance($instance);
+  }
+  $instances = field_info_instances('node', 'docbook');
+  foreach ($instances as $instance_name => $instance) {
+    field_delete_instance($instance);
+  }
+
+  // delete our content type
+  node_type_delete('docbook_section');
+  node_type_delete('docbook');
+
+  // purge all field information
+  field_purge_batch(1000);
+
+  // Delete menu links.
+  db_delete('menu_links')
+    ->condition('module', 'docbook')
+    ->execute();
+  menu_cache_clear_all();
+
+  /***
+  variable_del('docbook_allowed_types');
+  variable_del('docbook_child_type');
+  variable_del('docbook_block_mode');
+  */
+}
+
+/**
+ * Creates the DocBook content type.
+ */
+function _docbook_install_create_type_docbook() {
+  // Create an DocBook node type.
+  $type = 'docbook';
+  $docbook = array(
+    'type' => $type,
+    'name' => t('DocBook'),
+    'base' => 'node_content',
+    'description' => t('<em>DocBooks</em> are <em>Books</em> that can be exported into <em>DocBook/XML</em> format. It is also possible to import simple DocBook documents and to convert Books to DocBooks.'),
+    'help' => t("This will create a new DocBook document (of type 'book' or 'article')."),
+    'module' => 'docbook',
+    'custom' => TRUE,
+    'modified' => TRUE,
+    'locked' => TRUE,
+  );
+
+  $docbook = node_type_set_defaults($docbook);
+  node_type_save($docbook);
+
+  // Default to not promoted.
+  //variable_set('additional_settings__active_tab_' . $type, 'edit-menu');
+  variable_set('node_preview_' . $type, 2);
+  variable_set('node_options_' . $type, array('status'));
+  variable_set('node_submitted_' . $type, 0);
+  variable_set('menu_options_' . $type, array());
+  variable_set('menu_parent_' . $type, 'main-menu:0');
+
+  /*
+  // Use this default type for adding content to docbooks.
+  variable_set('docbook_allowed_types', array('docbook'));
+  variable_set('docbook_child_type', 'docbook');
+  */
+}
+
+/**
+ * Creates the DocBook_Section content type.
+ */
+function _docbook_install_create_type_docbook_section() {
+  // Create a DocBook Section node type.
+  $type = 'docbook_section';
+  $docbook_section = array(
+    'type' => $type,
+    'name' => t('DocBook Section'),
+    'base' => 'node_content',
+    'description' => t('A section is a DocBook chunk. It can be of type Chapter, Section, Simplesect, etc. Section and Simplesect can be nested under Chapter and Section, however Simplesect can have no nested sections.'),
+    'help' => t("This will create a new DocBook Section ('chapter', 'section', 'simplesect', etc.)"),
+    'module' => 'docbook',
+    'custom' => TRUE,
+    'modified' => TRUE,
+    'locked' => TRUE,
+  );
+
+  $docbook_section = node_type_set_defaults($docbook_section);
+  node_type_save($docbook_section);
+
+  // Default to not promoted.
+  //variable_set('additional_settings__active_tab_' . $type, 'edit-menu');
+  variable_set('node_preview_' . $type, 2);
+  variable_set('node_options_' . $type, array('status'));
+  variable_set('node_submitted_' . $type, 0);
+  variable_set('menu_options_' . $type, array());
+  variable_set('menu_parent_' . $type, 'main-menu:0');
+}
+
+
+/**
+ * Return an array of the fields that are to be installed.
+ * (see: http://www.thecarneyeffect.co.uk/creating-custom-content-type-adding-fields-programmatically-drupal-7)
+ */
+function _docbook_install_fields() {
+
+  return array(
+
+    array(
+      'field_name' => 'field_dbw_author',
+      'type' => 'text',
+      'cardinality' => '-1',
+    ),
+
+    array(
+      'field_name' => 'field_dbw_id',
+      'type' => 'text',
+      'settings' => array(
+        'max_length' => '50',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_keywords',
+      'type' => 'taxonomy_term_reference',
+      'cardinality' => '-1',
+      'settings' => array(
+        'allowed_values' => array(
+          array(
+            'vocabulary' => 'tags',
+            'parent' => '0',
+          ),
+        ),
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_date',
+      'type' => 'text',
+      'settings' => array(
+        'max_length' => '50',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_release',
+      'type' => 'text',
+      'settings' => array(
+        'max_length' => '100',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_abstract',
+      'type' => 'text_long',
+    ),
+
+    array(
+      'field_name' => 'field_dbw_copyright',
+      'type' => 'text_long',
+    ),
+
+    array(
+      'field_name' => 'field_dbw_doctype',
+      'type' => 'list_text',
+      'settings' => array(
+        'allowed_values' => array(
+          'book' => 'book',
+          'article' => 'article',
+        ),
+        'allowed_values_function' => '',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_content',
+      'type' => 'text_long',
+    ),
+
+    array(
+      'field_name' => 'field_dbw_sectype',
+      'type' => 'list_text',
+      'settings' => array(
+        'allowed_values' => array(
+          'chapter' => 'chapter',
+          'section' => 'section',
+          'simplesect' => 'simplesect',
+        ),
+      ),
+    ),
+
+  );
+}
+
+/**
+ * Return an array of the instancies that are to be installed.
+ * (see: http://www.thecarneyeffect.co.uk/creating-custom-content-type-adding-fields-programmatically-drupal-7)
+ */
+function _docbook_install_instancies() {
+
+  return array(
+
+    // docbook instancies
+
+    array(
+      'field_name' => 'field_dbw_doctype',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Type',
+      'description' => 'The type of the docbook document.',
+      'widget' => array(
+        'weight' => '0',
+        'type' => 'options_select',
+      ),
+      'required' => TRUE,
+      'default_value' => array(
+        array('value' => 'article'),
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_id',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'ID',
+      'description' => 'A unique alphanumeric identifier for the book/article.',
+      'required' => TRUE,
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => '1',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_abstract',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Abstract',
+      'description' => 'A summary of the document.',
+      'widget' => array(
+        'weight' => '3',
+        'type' => 'text_textarea',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_keywords',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Keywords',
+      'description' => 'Keywords describing the content of the document.',
+      'widget' => array(
+        'weight' => '4',
+        'type' => 'taxonomy_autocomplete',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_author',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Author',
+      'description' => 'The name of the author(s) of the document, in the format: firstname, lastname, email, organization, org_url (organization and url are optional).',
+      'widget' => array(
+        'type' => 'text_textfield',
+        'weight' => '5',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_date',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Date',
+      'description' => 'The date of publication or revision of the document.',
+      'widget' => array(
+        'weight' => '6',
+        'type' => 'text_textfield',
+      ),
+    ),
+    array(
+      'field_name' => 'field_dbw_release',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Release',
+      'description' => 'Information about the release of the document.',
+      'widget' => array(
+        'weight' => '7',
+        'type' => 'text_textfield',
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_copyright',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'label' => 'Copyright',
+      'description' => 'Copyright information about the document.',
+      'widget' => array(
+        'weight' => '8',
+        'type' => 'text_textarea',
+      ),
+      'default_value' => array(
+        array(
+          'value' => 'Copyright (C) 2013 Firstname Lastname. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.1 or any later version published by the Free Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License."',
+        ),
+      ),
+    ),
+
+    // docbook_section instancies
+
+    array(
+      'field_name' => 'field_dbw_sectype',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'label' => 'Type',
+      'description' => 'The type of this section. Chapter can be used only for the books. SimpleSect can have no nested sections. ',
+      'widget' => array(
+        'weight' => '0',
+        'type' => 'options_select',
+      ),
+      'required' => 1,
+      'default_value' => array(
+        array('value' => 'section'),
+      ),
+    ),
+
+    array(
+      'field_name' => 'field_dbw_id',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'label' => 'ID',
+      'description' => 'Unique alphanumeric identifier of the section.',
+      'widget' => array(
+        'weight' => '1',
+        'type' => 'text_textfield',
+      ),
+      'required' => TRUE,
+    ),
+
+    array(
+      'field_name' => 'field_dbw_content',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'label' => 'Content',
+      'description' => 'The content of this section.',
+      'widget' => array(
+        'weight' => '4',
+        'type' => 'text_textarea',
+        'settings' => array(
+          'rows' => '20',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '1',
+      ),
+    ),
+  );
+}
+
+/********************************************************
+function _docbook_install_fields() {
+
+  $fields = array(
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'max_length' => '255',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_author' => array(
+                'value' => 'field_dbw_author_value',
+                'format' => 'field_dbw_author_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_author' => array(
+                'value' => 'field_dbw_author_value',
+                'format' => 'field_dbw_author_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_author',
+      'type' => 'text',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => '255',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    ),
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'max_length' => '50',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_id' => array(
+                'value' => 'field_dbw_id_value',
+                'format' => 'field_dbw_id_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_id' => array(
+                'value' => 'field_dbw_id_value',
+                'format' => 'field_dbw_id_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_id',
+      'type' => 'text',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => '50',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+          'docbook_section',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'allowed_values' => array(
+          array(
+            'vocabulary' => 'tags',
+            'parent' => '0',
+          ),
+        ),
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_keywords' => array(
+                'tid' => 'field_dbw_keywords_tid',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_keywords' => array(
+                'tid' => 'field_dbw_keywords_tid',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'tid' => array(
+          'table' => 'taxonomy_term_data',
+          'columns' => array(
+            'tid' => 'tid',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'tid' => array(
+          'tid',
+        ),
+      ),
+      'field_name' => 'field_dbw_keywords',
+      'type' => 'taxonomy_term_reference',
+      'module' => 'taxonomy',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'tid' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'max_length' => '50',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_date' => array(
+                'value' => 'field_dbw_date_value',
+                'format' => 'field_dbw_date_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_date' => array(
+                'value' => 'field_dbw_date_value',
+                'format' => 'field_dbw_date_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_date',
+      'type' => 'text',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => '50',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'max_length' => '100',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_release' => array(
+                'value' => 'field_dbw_release_value',
+                'format' => 'field_dbw_release_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_release' => array(
+                'value' => 'field_dbw_release_value',
+                'format' => 'field_dbw_release_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_release',
+      'type' => 'text',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => '100',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_abstract' => array(
+                'value' => 'field_dbw_abstract_value',
+                'format' => 'field_dbw_abstract_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_abstract' => array(
+                'value' => 'field_dbw_abstract_value',
+                'format' => 'field_dbw_abstract_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_abstract',
+      'type' => 'text_long',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'text',
+          'size' => 'big',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_copyright' => array(
+                'value' => 'field_dbw_copyright_value',
+                'format' => 'field_dbw_copyright_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_copyright' => array(
+                'value' => 'field_dbw_copyright_value',
+                'format' => 'field_dbw_copyright_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_copyright',
+      'type' => 'text_long',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'text',
+          'size' => 'big',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'allowed_values' => array(
+          'book' => 'book',
+          'article' => 'article',
+        ),
+        'allowed_values_function' => '',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_doctype' => array(
+                'value' => 'field_dbw_doctype_value',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_doctype' => array(
+                'value' => 'field_dbw_doctype_value',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          'value',
+        ),
+      ),
+      'field_name' => 'field_dbw_doctype',
+      'type' => 'list_text',
+      'module' => 'list',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_content' => array(
+                'value' => 'field_dbw_content_value',
+                'format' => 'field_dbw_content_format',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_content' => array(
+                'value' => 'field_dbw_content_value',
+                'format' => 'field_dbw_content_format',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(
+        'format' => array(
+          'table' => 'filter_format',
+          'columns' => array(
+            'format' => 'format',
+          ),
+        ),
+      ),
+      'indexes' => array(
+        'format' => array(
+          'format',
+        ),
+      ),
+      'field_name' => 'field_dbw_content',
+      'type' => 'text_long',
+      'module' => 'text',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'text',
+          'size' => 'big',
+          'not null' => FALSE,
+        ),
+        'format' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook_section',
+        ),
+      ),
+    )
+    array(
+      'translatable' => '0',
+      'entity_types' => array(),
+      'settings' => array(
+        'allowed_values' => array(
+          'chapter' => 'chapter',
+          'section' => 'section',
+          'simplesect' => 'simplesect',
+        ),
+        'allowed_values_function' => '',
+      ),
+      'storage' => array(
+        'type' => 'field_sql_storage',
+        'settings' => array(),
+        'module' => 'field_sql_storage',
+        'active' => '1',
+        'details' => array(
+          'sql' => array(
+            'FIELD_LOAD_CURRENT' => array(
+              'field_data_field_dbw_sectype' => array(
+                'value' => 'field_dbw_sectype_value',
+              ),
+            ),
+            'FIELD_LOAD_REVISION' => array(
+              'field_revision_field_dbw_sectype' => array(
+                'value' => 'field_dbw_sectype_value',
+              ),
+            ),
+          ),
+        ),
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          'value',
+        ),
+      ),
+      'field_name' => 'field_dbw_sectype',
+      'type' => 'list_text',
+      'module' => 'list',
+      'active' => '1',
+      'locked' => '0',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'columns' => array(
+        'value' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'bundles' => array(
+        'node' => array(
+          'docbook_section',
+        ),
+      ),
+    )
+  );
+
+  return $fields;
+}
+
+function _docbook_install_instances() {
+
+  $instancies = array(
+    array(
+      'label' => 'Author',
+      'widget' => array(
+        'weight' => '5',
+        'type' => 'text_textfield',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'size' => '60',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 0,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'The name of the author(s) of the document, in the format: firstname, lastname, email, organization, org_url (organization and url are optional).',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_author',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'ID',
+      'widget' => array(
+        'weight' => '1',
+        'type' => 'text_textfield',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'size' => '60',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 1,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 1,
+      'description' => 'A unique alphanumeric identifier for the book/article.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_id',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Keywords',
+      'widget' => array(
+        'weight' => '4',
+        'type' => 'taxonomy_autocomplete',
+        'module' => 'taxonomy',
+        'active' => 0,
+        'settings' => array(
+          'size' => 60,
+          'autocomplete_path' => 'taxonomy/autocomplete',
+        ),
+      ),
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'taxonomy_term_reference_link',
+          'settings' => array(),
+          'module' => 'taxonomy',
+          'weight' => 2,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'Keywords describing the content of the document.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_keywords',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Date',
+      'widget' => array(
+        'weight' => '6',
+        'type' => 'text_textfield',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'size' => '60',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 3,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'The date of publication or revision of the document.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_date',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Release',
+      'widget' => array(
+        'weight' => '7',
+        'type' => 'text_textfield',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'size' => '60',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 4,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'Information about the release of the document.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_release',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Abstract',
+      'widget' => array(
+        'weight' => '3',
+        'type' => 'text_textarea',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'rows' => '5',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 5,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'A summary of the document.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_abstract',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Copyright',
+      'widget' => array(
+        'weight' => '8',
+        'type' => 'text_textarea',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'rows' => '5',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 6,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'Copyright information about the document.',
+      'default_value' => array(
+        array(
+          'value' => 'Copyright (C) 2013 Firstname Lastname. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.1 or any later version published by the Free Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License."',
+        ),
+      ),
+      'field_name' => 'field_dbw_copyright',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Type',
+      'widget' => array(
+        'weight' => '0',
+        'type' => 'options_select',
+        'module' => 'options',
+        'active' => 1,
+        'settings' => array(),
+      ),
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'list_default',
+          'settings' => array(),
+          'module' => 'list',
+          'weight' => 7,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 1,
+      'description' => 'The type of the docbook document.',
+      'default_value' => array(
+        array(
+          'value' => 'article',
+        ),
+      ),
+      'field_name' => 'field_dbw_doctype',
+      'entity_type' => 'node',
+      'bundle' => 'docbook',
+      'deleted' => '0',
+    ),
+    array(
+      'label' => 'ID',
+      'widget' => array(
+        'weight' => '1',
+        'type' => 'text_textfield',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'size' => '60',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '0',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 1,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 1,
+      'description' => 'Unique alphanumeric identifier of the section.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_id',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Content',
+      'widget' => array(
+        'weight' => '4',
+        'type' => 'text_textarea',
+        'module' => 'text',
+        'active' => 1,
+        'settings' => array(
+          'rows' => '20',
+        ),
+      ),
+      'settings' => array(
+        'text_processing' => '1',
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'text_default',
+          'settings' => array(),
+          'module' => 'text',
+          'weight' => 2,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 0,
+      'description' => 'The content of this section.',
+      'default_value' => NULL,
+      'field_name' => 'field_dbw_content',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'deleted' => '0',
+    )
+    array(
+      'label' => 'Type',
+      'widget' => array(
+        'weight' => '0',
+        'type' => 'options_select',
+        'module' => 'options',
+        'active' => 1,
+        'settings' => array(),
+      ),
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'type' => 'list_default',
+          'settings' => array(),
+          'module' => 'list',
+          'weight' => 3,
+        ),
+        'teaser' => array(
+          'type' => 'hidden',
+          'label' => 'above',
+          'settings' => array(),
+          'weight' => 0,
+        ),
+      ),
+      'required' => 1,
+      'description' => 'The type of this section. Chapter can be used only for the books. SimpleSect can have no nested sections. ',
+      'default_value' => array(
+        array(
+          'value' => 'section',
+        ),
+      ),
+      'field_name' => 'field_dbw_sectype',
+      'entity_type' => 'node',
+      'bundle' => 'docbook_section',
+      'deleted' => '0',
+    )
+  );
+
+  return $instancies;
+}
+
+*/

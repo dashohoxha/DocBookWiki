@@ -1,0 +1,8 @@
+name = DocBook
+description = Allows users to create, organize, export and import DocBook content.
+package = DocBookWiki
+core = 7.x
+;configure = admin/content/docbook/settings
+;stylesheets[all][] = docbook.css
+
+dependencies[] = 'book'

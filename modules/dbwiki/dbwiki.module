@@ -1,0 +1,204 @@
+<?php
+
+/**
+ * @file
+ * Provides a DocBookWiki input filter.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function dbwiki_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#dbwiki':
+      return t('<p>The DocBookWiki filter allows you to enter content using DocBookWiki, a simple plain-text syntax that is transformed into valid XHTML and can be exported as DocBook/XML.</p>');
+  }
+}
+
+/**
+ * Implements hook_filter_info().
+ */
+function dbwiki_filter_info() {
+  $filters['filter_dbwiki'] = array(
+    'title' => t('DocBookWiki'),
+    'description' => t('Allows content to be submitted using DocBookWiki, a simple plain-text syntax that is transformed into valid XHTML and can be exported as DocBook/XML.'),
+    'process callback' => '_filter_dbwiki',
+    'settings callback' => '_filter_dbwiki_settings',
+    'tips callback'  => '_filter_dbwiki_tips',
+  );
+
+  return $filters;
+}
+
+/**
+ * Returns the dbwiki input filter tips.
+ * @TODO: make it easier for translators.
+ */
+function _filter_dbwiki_tips($format, $long = FALSE) {
+  if ($long) {
+    return t('Quick Tips:<ul>
+      <li>Paragraph is delimited by empty lines.</li>
+      <li>Lists are denoted by bullets and indentation.
+          Bullets can be: (*|1.|a.|A.|i.|I.), the items of the same list
+          have the same bullet and indentation.</li>
+      <li>Blocks are:
+        <ul>
+          <li>programlisting (--code), literallayout (--ll), screen (--scr)</li>
+          <li>figure (--fig title), example (--xmp title)</li>
+          <li>admonitions: --n or --note, --c or --caution, --w or --warning,
+              --tip, --imp or --important</li>
+        </ul>
+      <li>Inline marks:
+        <ul>
+          <li>Links: [link_name &gt; href]</li>
+          <li>Footnotes: [/...]</li>
+          <li>Menu items: [Options-&gt;General-&gt;Save (Ctrl-S)]</li>
+          <li>Filename: ~filename~, emphasis: _word_</li>
+          <li>Images: [&lt; filename &lt; width &lt; alt ]</li>
+          <li>xref: [&gt; section_id ]</li>
+        </ul>
+      </li>
+      </ul>For complete details on the DocBookWiki syntax, see the <a href="http://daringfireball.net/projects/dbwiki/syntax">Docbookwiki documentation</a> and <a href="http://michelf.com/projects/php-docbookwiki/extra/">Docbookwiki Extra documentation</a> for tables, footnotes, and more.', array('@dbwiki_syntax' => url('filter/docbookwiki/syntax')));
+  }
+  else {
+    return t('You can use <a href="@filter_tips">DocBookWiki syntax</a> to format and style the text.', array('@filter_tips' => url('filter/tips')));
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function dbwiki_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'dbwiki_help':
+      $block['title'] = t('DocBookWiki filter tips');
+      $block['content'] = _dbwiki_help_block();
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function dbwiki_block_info() {
+  $blocks = array();
+  $blocks['dbwiki_help'] = array(
+    'info' => t('DocBookWiki filter tips'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Provides content for the dbwiki help block.
+ */
+function _dbwiki_help_block() {
+  return '<pre>' . t("
+## Header 2 ##
+### Header 3 ###
+#### Header 4 ####
+##### Header 5 #####
+(Hashes on right are optional)
+
+Link [Drupal](http://drupal.org)
+
+Inline markup like _italics_,
+ **bold**, and `code()`.
+
+> Blockquote. Like email replies
+>> And, they can be nested
+
+* Bullet lists are easy too
+- Another one
++ Another one
+
+1. A numbered list
+2. Which is numbered
+3. With periods and a space
+
+And now some code:
+    // Code is indented text
+    is_easy() to_remember();") . '</pre>';
+}
+
+/**
+ * Filter process callback.
+ */
+function _filter_dbwiki($text, $format) {
+  if (empty($text))  return '';
+
+  $file = drupal_get_path('module', 'dbwiki') . "/converter/package.WikiConverter.php";
+
+  include_once $file;
+  $parser = new WikiParser;
+  $tpl = $parser->parse_string($text);
+  $html = $tpl->to_html();
+
+  return $html;
+}
+
+/**
+ * Filter settings callback. Just a placeholder (empty) for now.
+ */
+function _filter_dbwiki_settings($form, &$form_state, $filter, $format, $defaults) {
+
+  $settings['dbwiki_wrapper'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('DocBookWiki'),
+  );
+
+  return $settings;
+}
+
+/**
+ * Generates XML for export when invoked by book_export().
+ *
+ * The given node is embedded to its absolute depth in a top level section. For
+ * example, a child node with depth 2 in the hierarchy is contained in
+ * (otherwise empty) <div> elements corresponding to depth 0 and depth 1.
+ * This is intended to support WYSIWYG output - e.g., level 3 sections always
+ * look like level 3 sections, no matter their depth relative to the node
+ * selected to be exported as printer-friendly HTML.
+ *
+ * @param $nid
+ *   An integer representing the node id (nid) of the node to export.
+ *
+ * @return
+ *   A string containing XML representing the node and its children in
+ *   the book hierarchy.
+ */
+function book_export_xml($nid) {
+  if (!user_access('access printer-friendly version')) {
+    drupal_access_denied();
+    return;
+  }
+
+  $export_data = array();
+  $node = node_load($nid);
+  if (!isset($node->book)) {
+    drupal_not_found();
+    return;
+  }
+
+  $tree = book_menu_subtree_data($node->book);
+  $contents = book_export_traverse($tree, 'book_node_export_xml');
+  print '<xmp>';  print_r($contents);  print '</xmp>';  //exit();  //debug
+  //return theme('book_export_html', array('title' => $node->title, 'contents' => $contents, 'depth' => $node->book['depth']));
+  return $contents;
+}
+
+function book_node_export_xml($node, $children = '') {
+  $text = $node->body['und'][0]['value'];
+
+  $file = drupal_get_path('module', 'dbwiki') . "/converter/package.WikiConverter.php";
+  include_once $file;
+  $parser = new WikiParser;
+  $tpl = $parser->parse_string($text);
+  $xml = $tpl->to_xml();
+  //print '<xmp>';  print_r($xml);  print '</xmp>';  exit();  //debug
+  print '<xmp>Children:"';  print_r($children);  print '"</xmp>';  //exit();  //debug
+  return $xml;
+}

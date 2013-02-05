@@ -1,0 +1,234 @@
+The structure of the text/wiki is like this:
+
+* Text --> (Paragraph | List | Block)*
+
+* Paragraph --> (NonEmptyLine | List | Block)+
+
+* List --> (ListItem)+ EndListLine
+  EndListLine --> '/'
+
+* ListItem --> StartItemLine ListItemText
+  StartItemLine --> ListItemMark Line
+  ListItemMark --> Indentation Bullet
+  Bullet --> ('*' | '1.' | 'a.' | 'i.') 
+  Line --> EmptyLine | NonEmptyLine
+  ListItemText --> (Line | List | Block)*
+
+* Block --> StartBlockLine (Line | List | Block)* EndBlockLine
+  EndBlockLine --> '----'
+  StartBlockLine --> '--code' | '--scr' | '--ll'
+                   | '--fig title' | '--xmp title'
+                   | '--n' | '--note' | '--c' | '--caution' | '--tip' 
+                   | '--w' | '--warning' | '--imp' | '--important'
+
+All the items of the same list have the same identation and the same
+bullet. A nested list is indented more than the containing list item.
+A slash (/) is required to denote the end of the list only when there
+is ambiguity, otherwise it is optional.
+
+The program converts the text/wiki format into text/html (or text/docbook)
+like this:
+
+* Paragraphs are enclosed by <p>...</p> (or <para>...</para>)
+
+* Blocks are enclosed by <xmp>...</xmp>, <pre>...</pre>
+  (or <programlisting>...</programlisting>, <screen>...</screen>)
+
+* Lists are denoted like this:
+    <ul>
+      <li>...</li>
+      . . .
+    </ul>
+    <ol type="x">
+      <li>...</li>
+      . . .
+    </ol>
+    where x can be a, i, I, etc.
+
+  or (in XML/DocBook format):
+    <itemizedlist>
+      <listitem><para>...</para></listitem>
+      . . .
+    </itemizedlist>
+    <orderedlist numeration="xxx">
+      <listitem><para>...</para></listitem>
+      . . .
+    </orderedlist>
+    where xxx can be: arabic, loweralpha, lowerroman, uperalpha, etc.
+
+
+
+Examples
+========
+
+* Example1
+~~~~~~~~~~
+The following text/wiki contains 2 paraghraphs:
+----------
+Line1
+Line2
+
+Line3
+----------
+
+It should be converted to:
+----------
+<p>Line1
+Line2</p>
+
+<p>Line3</p>
+----------
+
+
+* Example 2
+~~~~~~~~~~~
+The following text/wiki contains 2 blocks:
+----------
+--scr
+bash$ ls -al
+----
+--code
+function test() {}
+----
+----------
+
+It should be converted to:
+----------
+<pre>bash$ ls -al</pre>
+<xmp>function test() {}</xmp>
+----------
+
+
+* Example 3
+~~~~~~~~~~~
+The following  text/wiki contains a list:
+----------
+* Item1
+* Item2
+  1. Item21
+  1. Item22
+  1. Item23
+
+* Item3
+/
+----------
+Note that there is no need for closing the nested list by a slash (/)
+because there is no ambiguity about the end of the list. A slash (/)
+is required to denote the end of the list only when there is ambiguity,
+otherwise it is optional.
+
+It should be converted to:
+----------
+<ul>
+  <li>Item1</li>
+  <li>Item2</li>
+    <ol>
+      <li>Item21</li>
+      <li>Item22</li>
+      <li>Item23</li>
+    </ol>
+  <li>Item3</li>
+</ul>
+----------
+
+
+* Example 4
+~~~~~~~~~~~
+The following  text/wiki contains a list and a block inside a paraghraph:
+----------
+Line1
+* Item1
+* Item2
+/
+--code
+test();
+----
+
+Line3
+Line4
+----------
+Note that there is no empty line between 'Line1' and '* Item1',
+otherwise it would mean the end of the paragraph and the list would
+not be nested inside the paragraph. For the same reason there is no
+empty line between the end of list '/' and '--code'. 
+
+It should be converted to:
+----------
+<p>Line1
+<ol>
+  <li>Item1</li>
+  <li>Item2</li>
+</ol>
+<xmp>test()</xmp>
+</p>
+
+<p>Line3
+Line4</p>
+----------
+
+
+* Example 5
+~~~~~~~~~~~
+The following  text/wiki contains also a block inside a listitem:
+----------
+Line1
+ a. Item1
+ a. Item2
+ /
+--code
+test();
+----
+Line3
+
+1. Item1
+     a. Item101
+     a. Item102
+
+   a. Item111
+Line4
+Line5
+
+--scr
+ls -al
+----
+
+   a. Item112
+
+1. Item2
+1. Item3
+----------
+Note that 'Line4', 'Line5' and the '--scr' block, belong to Item111.
+Also note that Item111 is in the same list as Item112, but not in the
+same list as Item101 and Item102, because of the indentation; so, Item1
+contains 2 sublists inside.
+
+It should be converted to:
+----------
+<p>Line1
+<ol>
+  <li>Item1</li>
+  <li>Item2</li>
+</ol>
+<xmp>test()</xmp>
+Line3
+</p>
+
+<ol>
+  <li>Item1
+    <ol type="a">
+      <li>Item101</li>
+      <li>Item102</li>
+    </ol>
+    <ol type="a">
+      <li>Item111
+          Line4
+          Line5
+          <pre>ls -al</pre>
+      </li>
+      <li>Item112</li>
+    </ol>
+    </li>
+  <li>Item2</li>
+  <li>Item3</li>  
+</ol>
+----------
