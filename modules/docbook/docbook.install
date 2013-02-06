@@ -23,6 +23,10 @@ function docbook_install() {
   foreach (_docbook_install_instancies() as $instance) {
     field_create_instance($instance);
   }
+
+  // add the 'docbookwiki' text format,
+  // which contains only 'filter_dbwiki'
+  _docbook_install_add_format();
 }
 
 /**
@@ -70,6 +74,9 @@ function docbook_uninstall() {
   variable_del('docbook_child_type');
   variable_del('docbook_block_mode');
   */
+
+  // disable the 'docbookwiki' text format
+  _docbook_install_disable_format();
 }
 
 /**
@@ -136,4 +143,49 @@ function _docbook_install_create_type_docbook_section() {
   variable_set('node_submitted_' . $type, 0);
   variable_set('menu_options_' . $type, array());
   variable_set('menu_parent_' . $type, 'main-menu:0');
+}
+
+/**
+ * Text formats are usually defined from the admin GUI
+ * (admin/config/content/formats/add). But we can also
+ * add them programatically/automatically on installation.
+ *
+ * See: http://stackoverflow.com/questions/13330561/drupal-module-create-a-text-format?rq=1
+ *
+ * In our case, the filter 'filter_dbwiki' is defined by
+ * the module 'dbwiki', so this module depends on it.
+ */
+function _docbook_install_add_format() {
+
+  drupal_load('module', 'filter');
+
+  // check wheather it already exists
+  if (filter_format_exists('docbookwiki'))  return;
+
+  // define the attributes of the text format
+  $format = array(
+    'format' => 'docbookwiki',
+    'name' => 'DocBookWiki',
+    'filters' => array(
+      'filter_dbwiki' => array(
+        'weight' => 0,
+        'status' => TRUE,
+      ),
+    ),
+  );
+  $format = (object) $format;
+  filter_format_save($format);
+}
+
+/**
+ * Disable the 'docbookwiki' text format.
+ */
+function _docbook_install_disable_format() {
+  drupal_load('module', 'filter');
+
+  // check wheather it already exists
+  if (filter_format_exists('docbookwiki'))  return;
+
+  // disable the format
+  filter_format_disable('docbookwiki');
 }

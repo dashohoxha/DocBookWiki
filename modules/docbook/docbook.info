@@ -6,3 +6,5 @@ core = 7.x
 ;stylesheets[all][] = docbook.css
 
 dependencies[] = 'book'
+dependencies[] = 'dbwiki'
+dependencies[] = 'filter'
