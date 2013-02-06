@@ -159,9 +159,6 @@ function _docbook_install_add_format() {
 
   drupal_load('module', 'filter');
 
-  // check wheather it already exists
-  if (filter_format_exists('docbookwiki'))  return;
-
   // define the attributes of the text format
   $format = array(
     'format' => 'docbookwiki',
@@ -175,6 +172,10 @@ function _docbook_install_add_format() {
   );
   $format = (object) $format;
   filter_format_save($format);
+
+  // allow an authenticated user to use this text format
+  $role = user_role_load_by_name('authenticated user');
+  user_role_change_permissions($role->rid, array('use text format docbookwiki' => TRUE));
 }
 
 /**
