@@ -32,3 +32,34 @@ function docbook_menu() {
   return $items
 }
 */
+
+/**
+ * Implements hook_element_info_alter().
+ *
+ * Sets the text format processor to a custom callback function.
+ * This code is taken from: http://drupal.org/node/1003262#comment-4879140
+ * See also this: http://drupal.stackexchange.com/questions/16036/set-a-default-text-format-per-content-type-in-drupal-7
+ */
+function docbook_element_info_alter(&$type) {
+  if (isset($type['text_format']['#process'])) {
+    foreach ($type['text_format']['#process'] as &$callback) {
+      if ($callback === 'filter_process_format') {
+        $callback = 'docbook_filter_process_format';
+      }
+    }
+  }
+}
+
+/**
+ * Callback for docbook_element_info_alter().
+ */
+function docbook_filter_process_format($element) {
+  $element = filter_process_format($element);
+  // Change the default text format of the field
+  // 'field_dbw_content' to 'DocBookWiki'.
+  if ($element['#bundle'] == 'docbook_section' && $element['#field_name'] == 'field_dbw_content') {
+    $element['format']['format']['#default_value'] = 'docbookwiki';
+  }
+  return $element;
+}
+?>
