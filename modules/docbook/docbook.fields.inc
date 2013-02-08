@@ -206,6 +206,7 @@ function _docbook_install_instancies() {
         'type' => 'text_textfield',
       ),
     ),
+
     array(
       'field_name' => 'field_dbw_release',
       'entity_type' => 'node',
@@ -242,7 +243,7 @@ function _docbook_install_instancies() {
       'entity_type' => 'node',
       'bundle' => 'docbook_section',
       'label' => 'Type',
-      'description' => 'The type of this section. Chapter can be used only for the books. SimpleSect can have no nested sections. ',
+      'description' => 'The type of this section. Chapter can be used only for the books. SimpleSect can have no nested sections.',
       'widget' => array(
         'weight' => '0',
         'type' => 'options_select',

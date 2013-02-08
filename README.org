@@ -1,4 +1,177 @@
-DocBookWiki
-===========
 
-Author simple DocBook documents quickly and easily.
+* About DocBookWiki
+
+  The goal of DocBookWiki is to help creating and editing simple
+  DocBook documents, quickly and easily, from a web interface.
+
+  The idea is to use a simple text markup syntax, similar to a wiki
+  markup, to denote some of the most commonly used DocBook
+  elements. Then, this markup can be converted to HTML for being
+  displayed on a browser, and most importantly, can be converted to
+  XML for exporting the documents in the DocBook/XML format.
+
+  The number of tags/elements that can be used in a DocBook document
+  is huge (see: http://www.docbook.org/tdg/en/html/part2.html).
+  However, fortunately, the structure of a DocBook document is very
+  flexible, not all of the tags are required, and with a very small
+  subset of them one can write pritty good DocBook documents.
+
+  DocBookWiki employes a very small subset of DocBook tags, which
+  usually are enough to write manuals or other technical documents for
+  programs or applications. Maybe later it can also become extensible,
+  in order to cover other types of documents as well.
+
+
+* History
+
+  DocBooWiki started many years ago as a project on SF:
+   - http://sourceforge.net/projects/doc-book/
+   - http://doc-book.sourceforge.net/homepage/
+
+  However it was built on top of a custom PHP framework developed by
+  me, which was used mostly only by me. Some of the problems with that
+  were these:
+   - Almost every new feature to be added had to be developed from
+     scratch.
+   - Since no body else was using that framework, I was alone, the
+     only developper, and nobody else could help me.
+   - Since I was the only developer/maintainer, over time maintaining
+     and improving it become very difficult, and finally I gave up
+     with it.
+
+  Now that I have started to re-implement it on Drupal I think that it
+  may have some better chances to succeed. Some of advantages of
+  implementing it on Drupal are these:
+   - It is a very popular framework and lots of developpers are
+     familiar with it. This means that maybe I can get more help for
+     developing it, and in case that I am not available anymore
+     probably somebody else can pick it up.
+   - Drupal already has lots of available features and modules, so
+     some things can be much more easy to implement than before.
+
+
+* Design
+
+  There is already a *Book* module in Drupal, which takes care of the
+  book layout and navigation (the hierarchy of the pages and their
+  order and relation to each other). So, probably we can just extend
+  this one (and this would be the best thing to do, in terms or
+  reusability).
+
+  From the DocBook point of view, each document (book or article), is
+  composed of sections, which can contain some content (text,
+  paragraphs, etc.) and some other sub-sections. So, to model a
+  DocBook document in Drupal, we would need at least two content
+  types: a 'DocBook' content type (to represent the document itself),
+  and a 'DocBook Section' content type (to represent the sections and
+  subsections). The hierarchy of the sections and subsections can be
+  built using the features of the /Book/ module.
+
+  The fields of these content types can be like this:
+
+   - DocBook:
+      + Title :: The title of the document.
+      + ID :: A unique alphanumeric identifier for the document.
+      + Type :: The type of the document (*book* or *article*).
+      + Abstract :: A summary of the document.
+      + Author :: The name of the author(s) of the document.
+      + Date :: The date of publication or revision of the document.
+      + Release :: Information about the release of the document.
+      + Copyright :: Copyright information about the document.
+
+   - DocBook_Section:
+      + Title :: The title of the section.
+      + ID :: A unique alphanumeric identifier for the section.
+      + Type :: The type of the section (*preface*, *chapter*,
+                *section*, *simplesect*, *appendix*, etc.). /Chapter/
+                can be used only for the books. /SimpleSect/ can have
+                no nested sections.
+      + Content :: The content of the section. It can contain
+                   paragraphs, lists, programlistings, etc.
+
+  The content of the section is going to use simple text markup to
+  denote the paragraphs, lists, programlistings, etc. In order to
+  parse it and convert it to HTML for propper display, we need a
+  custom content filter and a text format.
+
+
+* Wiki Syntax
+
+  The code of the custom content filter (named *dbwiki*) that is used
+  to parse the wiki content, and to convert it to HTML and XML, is
+  taken directly from the old project, with small modifications. The
+  syntax that it can parse is like this:
+
+  - Paragraph is delimited by empty lines. It can contain as well blocks
+    or lists (which can have empty lines inside them).
+
+  - Lists are denoted by bullets and indentation.
+    Bullets can be: (*|1.|a.|A.|i.|I.), the items of the same list have
+    the same bullet and indentation. A list item can contain sublists,
+    blocks, empty lines, etc. A slash (/) is used to end a list, if
+    there is ambiguity.
+
+  - Blocks are denoted by a starting line (--xxx) and an ending line
+    (----). Blocks are:
+      + programlisting (--code), literallayout (--ll), screen (--scr)
+      + figure (--fig title), example (--xmp title)
+      + admonitions: --n or --note, --c or --caution, --w or --warning,
+	--tip, --imp or --important,
+
+  - Inline marks are denoted by special characters and are contained
+    inside a single line (cannot span multiple lines). They are:
+      + Links: [link_name > href]
+	[...] should be escaped like this: \[...]
+      + Footnotes: [/...]
+      + Menu items: [Options->General->Save (Ctrl-S)]
+      + Prompt and command are separated by '!#' in a single line:
+	prompt!# command
+	(escaped like this '\!#')
+      + Filename: \~filename~, emphasis: \_word_
+      + Images: [< filename < width < alt ]
+      + xref: [> section_id ]
+
+  - CDATA sections are denoted by [[xyz] ]. This markup can be escaped
+    by preceding it by \ (like \[[xyz] ]). As a shortcut,
+#BEGIN_EXAMPLE
+      --code--
+      xyz
+      ----
+#END_EXAMPLE
+    is equivalent to:
+#BEGIN_EXAMPLE
+      --code
+      [[xyz] ]
+      ----
+#END_EXAMPLE
+    The same can be done for --screen, --scr, and --ll.
+
+
+* Implementation Steps
+
+** DONE Build a custom content filter.
+   Use the code from the old project.
+
+** DONE Build content types DocBook and DocBook_Section.
+
+** Add CSS and styles so that the HTML pages looks nice.
+
+** Export books and sections as DocBook/XML.
+
+** Convert existing Book nodes to DocBook and DocBook_Section.
+
+** Import a simple DocBook document.
+
+** Import an HTML document (exported from Book as printer-friendly)
+
+** Convert and export docbooks to LaTeX and PDF.
+   Rebuild each night downloadable versions (LaTeX, PDF, etc.) of the
+   documents.
+
+** Build a Drupal installation profile for DocBookWiki.
+   Should also include:
+     - support for multi-language content
+     - fine-grained access permissions to sections and books
+     - ability to approve modifications before publishing
+     - ability to leave comments to each section
+     - etc.
