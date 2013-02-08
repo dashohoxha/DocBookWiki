@@ -14,17 +14,17 @@
   is huge (see: http://www.docbook.org/tdg/en/html/part2.html).
   However, fortunately, the structure of a DocBook document is very
   flexible, not all of the tags are required, and with a very small
-  subset of them one can write pritty good DocBook documents.
+  subset of them one can write pretty good DocBook documents.
 
-  DocBookWiki employes a very small subset of DocBook tags, which
+  DocBookWiki employs a very small subset of DocBook tags, which
   usually are enough to write manuals or other technical documents for
   programs or applications. Maybe later it can also become extensible,
-  in order to cover other types of documents as well.
+  in order to support other types of documents as well.
 
 
 * History
 
-  DocBooWiki started many years ago as a project on SF:
+  DocBookWiki started many years ago as a project on SF:
    - http://sourceforge.net/projects/doc-book/
    - http://doc-book.sourceforge.net/homepage/
 
@@ -34,7 +34,7 @@
    - Almost every new feature to be added had to be developed from
      scratch.
    - Since no body else was using that framework, I was alone, the
-     only developper, and nobody else could help me.
+     only developer, and nobody else could help me.
    - Since I was the only developer/maintainer, over time maintaining
      and improving it become very difficult, and finally I gave up
      with it.
@@ -42,9 +42,9 @@
   Now that I have started to re-implement it on Drupal I think that it
   may have some better chances to succeed. Some of advantages of
   implementing it on Drupal are these:
-   - It is a very popular framework and lots of developpers are
+   - Drupal is a very popular framework and lots of developers are
      familiar with it. This means that maybe I can get more help for
-     developing it, and in case that I am not available anymore
+     developing it, and in case that I am not available anymore,
      probably somebody else can pick it up.
    - Drupal already has lots of available features and modules, so
      some things can be much more easy to implement than before.
@@ -91,7 +91,7 @@
 
   The content of the section is going to use simple text markup to
   denote the paragraphs, lists, programlistings, etc. In order to
-  parse it and convert it to HTML for propper display, we need a
+  parse it and convert it to HTML for proper display, we need a
   custom content filter and a text format.
 
 
@@ -102,76 +102,79 @@
   taken directly from the old project, with small modifications. The
   syntax that it can parse is like this:
 
-  - Paragraph is delimited by empty lines. It can contain as well blocks
-    or lists (which can have empty lines inside them).
+  - /Paragraph/ is delimited by empty lines. It can contain as well
+    /blocks/ or /lists/ (which can have empty lines inside them).
 
-  - Lists are denoted by bullets and indentation.
-    Bullets can be: (*|1.|a.|A.|i.|I.), the items of the same list have
-    the same bullet and indentation. A list item can contain sublists,
-    blocks, empty lines, etc. A slash (/) is used to end a list, if
-    there is ambiguity.
+  - /Lists/ are denoted by _bullets_ and _indentation_.  Bullets can
+    be: ( =*= | =1.= | =a.= | =A.= | =i.= | =I.= ), the items of the
+    same list have _the same bullet and indentation_. A list item can
+    contain /sublists/, /blocks/, empty lines, etc. A slash (=/=) is
+    used to end a list, if there is ambiguity.
 
-  - Blocks are denoted by a starting line (--xxx) and an ending line
-    (----). Blocks are:
-      + programlisting (--code), literallayout (--ll), screen (--scr)
-      + figure (--fig title), example (--xmp title)
-      + admonitions: --n or --note, --c or --caution, --w or --warning,
-	--tip, --imp or --important,
+  - Blocks are denoted by a starting line (=--xxx=) and an ending line
+    (=----=). Blocks are:
+      + programlisting (=--code=), literallayout (=--ll=), screen
+        (=--scr=)
+      + figure (=--fig title=), example (=--xmp title=)
+      + admonitions: =--n= (or =--note=), =--c= (or =--caution=),
+        =--w= (or =--warning=), =--tip=, =--imp= (or =--important=)
 
   - Inline marks are denoted by special characters and are contained
     inside a single line (cannot span multiple lines). They are:
-      + Links: [link_name > href]
-	[...] should be escaped like this: \[...]
-      + Footnotes: [/...]
-      + Menu items: [Options->General->Save (Ctrl-S)]
-      + Prompt and command are separated by '!#' in a single line:
-	prompt!# command
-	(escaped like this '\!#')
-      + Filename: \~filename~, emphasis: \_word_
-      + Images: [< filename < width < alt ]
-      + xref: [> section_id ]
+      + Links: =[link_name > href]=
+	=[...]= should be escaped like this: =\[...]=
+      + Footnotes: =[/...]=
+      + Menu items: =[Options->General->Save (Ctrl-S)]=
+      + Prompt and command are separated by =!#= in a single line:
+        #BEGIN_EXAMPLE
+	prompt!# command=
+        #END_EXAMPLE
+	(escaped like this: =\!#=)
+      + Filename: =~filename~=, emphasis: =_word_=
+      + Images: =[< filename < width < alt ]=
+      + xref: =[> section_id ]=
 
-  - CDATA sections are denoted by [[xyz] ]. This markup can be escaped
-    by preceding it by \ (like \[[xyz] ]). As a shortcut,
-#BEGIN_EXAMPLE
+  - CDATA sections are denoted by =[[xyz] ]=. This markup can be escaped
+    by preceding it by =\= (like =\[[xyz] ]=). As a shortcut,
+      #BEGIN_EXAMPLE
       --code--
       xyz
       ----
-#END_EXAMPLE
-    is equivalent to:
-#BEGIN_EXAMPLE
+      #END_EXAMPLE
+     is equivalent to:
+      #BEGIN_EXAMPLE
       --code
       [[xyz] ]
       ----
-#END_EXAMPLE
-    The same can be done for --screen, --scr, and --ll.
+      #END_EXAMPLE
+    The same can be done for =--screen=, =--scr=, and =--ll=.
 
 
 * Implementation Steps
 
-** DONE Build a custom content filter.
-   Use the code from the old project.
+  - [X] Build a custom content filter. Use the code from the old
+        project.
 
-** DONE Build content types DocBook and DocBook_Section.
+  - [X] Build content types DocBook and DocBook_Section.
 
-** Add CSS and styles so that the HTML pages looks nice.
+  - [ ] Add CSS and styles so that the HTML pages looks nice.
 
-** Export books and sections as DocBook/XML.
+  - [ ] Export books and sections as DocBook/XML.
 
-** Convert existing Book nodes to DocBook and DocBook_Section.
+  - [ ] Convert existing Book nodes to DocBook and DocBook_Section.
 
-** Import a simple DocBook document.
+  - [ ] Import a simple DocBook document.
 
-** Import an HTML document (exported from Book as printer-friendly)
+  - [ ] Import an HTML document (exported from Book as printer-friendly)
 
-** Convert and export docbooks to LaTeX and PDF.
-   Rebuild each night downloadable versions (LaTeX, PDF, etc.) of the
-   documents.
+  - [ ] Convert and export docbooks to LaTeX and PDF.  Rebuild each
+        night downloadable versions (LaTeX, PDF, etc.) of the
+        documents.
 
-** Build a Drupal installation profile for DocBookWiki.
-   Should also include:
-     - support for multi-language content
-     - fine-grained access permissions to sections and books
-     - ability to approve modifications before publishing
-     - ability to leave comments to each section
-     - etc.
+  - [ ] Build a Drupal installation profile for DocBookWiki. Should
+        also include:
+	 + support for multi-language content
+	 + fine-grained access permissions to sections and books
+	 + ability to approve modifications before publishing
+	 + ability to leave comments to each section
+	 + etc.
