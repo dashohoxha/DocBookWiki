@@ -121,32 +121,32 @@
 
   - Inline marks are denoted by special characters and are contained
     inside a single line (cannot span multiple lines). They are:
-      + Links: =[link_name > href]=
-	=[...]= should be escaped like this: =\[...]=
+      + Links: =[link_name > href]= (=[...]= should be escaped like
+        this: =\[...]=)
       + Footnotes: =[/...]=
       + Menu items: =[Options->General->Save (Ctrl-S)]=
       + Prompt and command are separated by =!#= in a single line:
-        #BEGIN_EXAMPLE
-	prompt!# command=
-        #END_EXAMPLE
-	(escaped like this: =\!#=)
+        #+BEGIN_EXAMPLE
+        prompt!# command=
+        #+END_EXAMPLE
+        (escaped like this: =\!#=)
       + Filename: =~filename~=, emphasis: =_word_=
       + Images: =[< filename < width < alt ]=
       + xref: =[> section_id ]=
 
   - CDATA sections are denoted by =[[xyz] ]=. This markup can be escaped
     by preceding it by =\= (like =\[[xyz] ]=). As a shortcut,
-      #BEGIN_EXAMPLE
+      #+BEGIN_EXAMPLE
       --code--
       xyz
       ----
-      #END_EXAMPLE
+      #+END_EXAMPLE
      is equivalent to:
-      #BEGIN_EXAMPLE
+      #+BEGIN_EXAMPLE
       --code
       [[xyz] ]
       ----
-      #END_EXAMPLE
+      #+END_EXAMPLE
     The same can be done for =--screen=, =--scr=, and =--ll=.
 
 
@@ -173,8 +173,8 @@
 
   - [ ] Build a Drupal installation profile for DocBookWiki. Should
         also include:
-	 + support for multi-language content
-	 + fine-grained access permissions to sections and books
-	 + ability to approve modifications before publishing
-	 + ability to leave comments to each section
-	 + etc.
+         + support for multi-language content
+         + fine-grained access permissions to sections and books
+         + ability to approve modifications before publishing
+         + ability to leave comments to each section
+         + etc.
