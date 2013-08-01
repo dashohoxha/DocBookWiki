@@ -159,7 +159,7 @@
 
   - [ ] Add CSS and styles so that the HTML pages looks nice.
 
-  - [ ] Export books and sections as DocBook/XML.
+  - [X] Export books and sections as DocBook/XML.
 
   - [ ] Convert existing Book nodes to DocBook and DocBook_Section.
 
