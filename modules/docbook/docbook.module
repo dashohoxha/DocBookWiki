@@ -227,7 +227,15 @@ function docbook_info_export($node) {
     }
   }
 
-  return $info->to_xml();
+  $doc_info = $info->to_xml();
+  $doctype = $node->field_dbw_doctype['und'][0]['value'];  // book or article
+  $infotag = $doctype."info";
+
+  return "
+  <$infotag>
+  $doc_info
+  </$infotag>
+";
 }
 
 /**
