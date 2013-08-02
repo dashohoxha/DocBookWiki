@@ -168,7 +168,7 @@ EOD;
     $docbook = <<<EOD
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 
-<!DOCTYPE $docype PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+<!DOCTYPE $doctype PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
           "http://docbook.org/xml/4.5/docbookx.dtd">
 
 <$doctype id='$id'>
@@ -179,8 +179,9 @@ EOD;
 EOD;
   }
 
-  header('Content-Type: application/docbook+xml; charset=utf-8');
-  header('Content-Disposition: attachment; filename="' . $id . '.xml"');
+  header('Content-Type: text/xml; charset=utf-8');
+  //header('Content-Type: application/docbook+xml; charset=utf-8');
+  //header('Content-Disposition: attachment; filename="' . $id . '.xml"');
   return $docbook;
 }
 
