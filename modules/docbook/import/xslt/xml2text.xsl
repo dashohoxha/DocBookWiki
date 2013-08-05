@@ -7,7 +7,6 @@
 <xsl:output method="xml" version="1.0" encoding="utf-8"
             omit-xml-declaration="yes" standalone="yes" indent="yes" />
 
-<xsl:include href="xml2text/info.xsl" />
 <xsl:include href="xml2text/block.xsl" />
 <xsl:include href="xml2text/list.xsl" />
 <xsl:include href="xml2text/inline.xsl" />
