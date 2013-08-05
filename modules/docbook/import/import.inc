@@ -12,20 +12,20 @@ function docbook_import($file) {
   _docbook_import_element($doc->documentElement);
 }
 
-function _docbook_import_element($domnode) {
+function _docbook_import_element($domnode, $bid =NULL, $plid =NULL, $alias =NULL) {
   if ($domnode->nodeType == XML_ELEMENT_NODE) {
     if (in_array($domnode->nodeName, array('book', 'article'))) {
-      _docbook_import_node_docbook($domnode);
+      list($bid, $plid, $alias) = _docbook_import_node_docbook($domnode);
     }
     elseif (in_array($domnode->nodeName, array('chapter', 'section', 'simplesect'))) {
-      _docbook_import_node_docbook_section($domnode);
+      list($plid, $alias) = _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias);
     }
   }
 
   if (! $domnode->hasChildNodes())  return;
 
   foreach ($domnode->childNodes as $child) {
-    _docbook_import_element($child);
+    _docbook_import_element($child, $bid, $plid, $alias);
   }
 }
 
@@ -59,15 +59,20 @@ function _docbook_import_node_docbook($domnode) {
   */
   foreach ($info->authors as $author) {
     $str_author = implode(', ', array_values($author));
-    $node->field_dbw_author['und'][] = $str_author;
+    $node->field_dbw_author['und'][] = array('value' => $str_author);
   }
 
-  //$node->path = array('alias' => $path);
-  //print_r($node);  exit(0);  //debug
+  $node->book['mlid'] = NULL;
+  $node->book['bid'] = 'new';
+  $alias = $domnode->getAttribute('id');
+  $node->path = array('alias' => $alias);
+
   node_save($node);
+  //print_r($node);  exit(0);  //debug
+  return array($node->nid, $node->book['mlid'], $alias);
 }
 
-function _docbook_import_node_docbook_section($domnode) {
+function _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias) {
   $doc1 = _docbook_node2doc($domnode);
   $title = _docbook_apply_stylesheet($doc1, 'get_title.xsl');
   $text  = _docbook_apply_stylesheet($doc1, 'xml2text.xsl');
@@ -82,9 +87,19 @@ function _docbook_import_node_docbook_section($domnode) {
   $node->field_dbw_sectype['und'][0]['value'] = $domnode->nodeName;
   $node->field_dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
 
-  //$node->path = array('alias' => $path);
-  //print_r($node);  exit(0);  //debug
+  $id = $domnode->getAttribute('id');
+  if (!empty($id))  {
+    $alias .= '/' . $id;
+    $node->path = array('alias' => $alias);
+  }
+
+  $node->book['bid'] = $bid;
+  $node->book['plid'] = $plid;
+  $node->book['mlid'] = NULL;
+
   node_save($node);
+  //print_r($node);  exit(0);  //debug
+  return array($node->book['mlid'], $alias);
 }
 
 /**
