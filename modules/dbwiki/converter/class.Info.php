@@ -5,6 +5,7 @@
    xml/docbook).
 
    Copyright (c) 2005 Dashamir Hoxha, dhoxha@inima.al
+   Copyright (c) 2013 Dashamir Hoxha, dashohoxha@gmail.com
 
    WikiConverter  is free  software;  you can  redistribute it  and/or
    modify  it under the  terms of  the GNU  General Public  License as
@@ -33,6 +34,8 @@ class Info
   var $authors;
   var $abstract;
   var $keywords;
+  var $date;
+  var $releaseinfo;
   var $copyright;
 
   function Info()
@@ -40,6 +43,8 @@ class Info
     $this->authors = array();
     $this->abstract = '';
     $this->keywords = array();
+    $this->date = '';
+    $this->releaseinfo = '';
     $this->copyright = '';
   }
 
@@ -105,6 +110,16 @@ class Info
     $this->abstract = trim($str);
   }
 
+  function parse_date($str)
+  {
+    $this->date = trim($str);
+  }
+
+  function parse_releaseinfo($str)
+  {
+    $this->releaseinfo = trim($str);
+  }
+
   function parse_copyright($str)
   {
     $this->copyright = trim($str);
@@ -116,6 +131,8 @@ class Info
     $xml .= $this->render_authors();
     $xml .= $this->render_abstract();
     $xml .= $this->render_keywords();
+    $xml .= $this->render_date();
+    $xml .= $this->render_releaseinfo();
     $xml .= $this->render_copyright();
     return $xml;
   }
@@ -173,6 +190,20 @@ class Info
     $xml .= "  </keywordset>\n";
 
     return $xml;
+  }
+
+  function render_date()
+  {
+    if (empty($this->date))  return '';
+
+    return "\n  <date>$this->date</date>\n";
+  }
+
+  function render_releaseinfo()
+  {
+    if (empty($this->releaseinfo))  return '';
+
+    return "\n  <releaseinfo>$this->releaseinfo</releaseinfo>\n";
   }
 
   function render_copyright()

@@ -71,7 +71,7 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_release',
+      'field_name' => 'field_dbw_releaseinfo',
       'type' => 'text',
       'settings' => array(
         'max_length' => '100',
@@ -208,10 +208,10 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_release',
+      'field_name' => 'field_dbw_releaseinfo',
       'entity_type' => 'node',
       'bundle' => 'docbook',
-      'label' => 'Release',
+      'label' => 'Release Info',
       'description' => 'Information about the release of the document.',
       'widget' => array(
         'weight' => '7',

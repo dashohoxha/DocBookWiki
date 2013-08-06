@@ -32,6 +32,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
   <xsl:apply-templates select="./author" />
   <xsl:apply-templates select="./abstract" />
   <xsl:apply-templates select="./keywordset" />
+  <xsl:apply-templates select="./date" />
+  <xsl:apply-templates select="./releaseinfo" />
 
   <!-- legalnotice (copyright) -->
   <xsl:apply-templates select="./legalnotice" />
@@ -94,6 +96,30 @@ license is included in the section entitled
 <xsl:template match="keyword">
   <xsl:apply-templates />
   <xsl:text>, </xsl:text>
+</xsl:template>
+
+
+<!-- date -->
+<xsl:template match="date">
+<xsl:text>
+@date: </xsl:text>
+
+  <xsl:apply-templates />
+
+  <xsl:text>
+</xsl:text>
+</xsl:template>
+
+
+<!-- releaseinfo -->
+<xsl:template match="releaseinfo">
+<xsl:text>
+@releaseinfo: </xsl:text>
+
+  <xsl:apply-templates />
+
+  <xsl:text>
+</xsl:text>
 </xsl:template>
 
 
