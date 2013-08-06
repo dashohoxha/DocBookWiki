@@ -87,10 +87,11 @@ class Info
   {
     $arr = explode(',', $str);
     $this->authors[] = array(
-                             'surname' => trim($arr[0]),
                              'firstname' => trim($arr[1]),
+                             'surname' => trim($arr[0]),
                              'email' => trim($arr[2]),
-                             'org' => trim($arr[3])
+                             'org' => trim($arr[3]),
+                             'org_url' => trim($arr[4]),
                              );
   }
 
@@ -148,18 +149,20 @@ class Info
         $xml .= "\n  <author>\n";
         $xml .= "    <firstname>$firstname</firstname>\n";
         $xml .= "    <surname>$surname</surname>\n";
-        if ($email!='' or $org!='')
+        if (!empty($email)) {
+	  $xml .= "    <email>$email</email>\n";
+	}
+        if (!empty($org))
           {
+	    $org = regex_replace($org);
             $xml .= "    <affiliation>\n";
-            if ($org!='')
-              {
-                $org = regex_replace($org);
-                $xml .= "      <orgname>$org</orgname>\n";
-              }
-            if ($email!='')
-              {
-                $xml .= "      <address><email>$email</email></address>\n";
-              }
+            $xml .= "      <orgname>\n";
+	    if (empty($org_url)) {
+	      $xml .= "        $org\n";
+	    } else {
+	      $xml .= "        <ulink url='$org_url'>$org</ulink>\n";
+	    }
+            $xml .= "      </orgname>\n";
             $xml .= "    </affiliation>\n";
           }
         $xml .= "  </author>\n";

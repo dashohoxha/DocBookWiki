@@ -25,6 +25,8 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 <xsl:transform xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version='1.0'>
 
+<xsl:output method="xml" version="1.0" encoding="utf-8"
+            omit-xml-declaration="yes" standalone="yes" indent="yes" />
 
 <!-- bookinfo or articleinfo -->
 <xsl:template match="bookinfo | articleinfo">
@@ -55,13 +57,22 @@ license is included in the section entitled
 <xsl:template match="author">
   <xsl:text>
 @author: </xsl:text>
-  <xsl:apply-templates select="./surname" />
+  <xsl:value-of select="./firstname" />
   <xsl:text>, </xsl:text>
-  <xsl:apply-templates select="./firstname" />
+  <xsl:value-of select="./surname" />
   <xsl:text>, </xsl:text>
-  <xsl:apply-templates select="./affiliation/address/email" />
+  <xsl:value-of select="./email" />
   <xsl:text>, </xsl:text>
-  <xsl:apply-templates select="./affiliation/orgname" />
+
+  <xsl:if test="not(./affiliation/orgname/ulink)">
+    <xsl:value-of select="./affiliation/orgname" />
+  </xsl:if>
+
+  <xsl:if test="./affiliation/orgname/ulink">
+    <xsl:value-of select="./affiliation/orgname/ulink/text()" />
+    <xsl:text>, </xsl:text>
+    <xsl:value-of select="./affiliation/orgname/ulink/@url" />
+  </xsl:if>
 
   <xsl:text>
 </xsl:text>
