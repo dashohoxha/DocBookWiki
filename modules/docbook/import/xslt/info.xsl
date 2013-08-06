@@ -1,9 +1,10 @@
 <?xml version='1.0'?><!-- -*-SGML-*- -->
 <!--
 This file  is part of  DocBookWiki.  DocBookWiki is a  web application
-that  displays  and  edits  DocBook  documents.  
+that  displays  and  edits  DocBook  documents.
 
 Copyright (C) 2004, 2005 Dashamir Hoxha, dashohoxha@users.sf.net
+Copyright (C) 2013 Dashamir Hoxha, dashohoxha@gmail.com
 
 DocBookWiki is free software; you can redistribute it and/or modify it
 under the terms of the GNU  General Public License as published by the
@@ -50,7 +51,8 @@ license is included in the section entitled
 
 <!-- author -->
 <xsl:template match="author">
-  <xsl:text>@author: </xsl:text>
+  <xsl:text>
+@author: </xsl:text>
   <xsl:apply-templates select="./surname" />
   <xsl:text>, </xsl:text>
   <xsl:apply-templates select="./firstname" />
@@ -104,11 +106,17 @@ license is included in the section entitled
 
 
 <!-- elements that are skipped -->
-<xsl:template match="abstract/para | legalnotice/para 
-                     | surname | firstname | orgname 
+<xsl:template match="abstract/para | legalnotice/para
+                     | surname | firstname | orgname
                      | affiliation/address/email">
   <xsl:apply-templates />
 </xsl:template>
 
+<!-- ignore the title and any sections -->
+<xsl:template match="title | chapter | section | simplesect" />
+
+<!-- ignore the (empty) text of some elements -->
+<xsl:template match="book/text() | article/text()
+                     | bookinfo/text() | articleinfo/text()" />
 
 </xsl:transform>
