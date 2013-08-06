@@ -12,20 +12,20 @@ function docbook_import($file) {
   _docbook_import_element($doc->documentElement);
 }
 
-function _docbook_import_element($domnode, $bid =NULL, $plid =NULL, $alias =NULL) {
+function _docbook_import_element($domnode, $bid =NULL, $plid =NULL, $book_alias =NULL) {
   if ($domnode->nodeType == XML_ELEMENT_NODE) {
     if (in_array($domnode->nodeName, array('book', 'article'))) {
-      list($bid, $plid, $alias) = _docbook_import_node_docbook($domnode);
+      list($bid, $plid, $book_alias) = _docbook_import_node_docbook($domnode);
     }
     elseif (in_array($domnode->nodeName, array('chapter', 'section', 'simplesect'))) {
-      list($plid, $alias) = _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias);
+      $plid = _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias);
     }
   }
 
   if (! $domnode->hasChildNodes())  return;
 
   foreach ($domnode->childNodes as $child) {
-    _docbook_import_element($child, $bid, $plid, $alias);
+    _docbook_import_element($child, $bid, $plid, $book_alias);
   }
 }
 
@@ -64,15 +64,15 @@ function _docbook_import_node_docbook($domnode) {
 
   $node->book['mlid'] = NULL;
   $node->book['bid'] = 'new';
-  $alias = $domnode->getAttribute('id');
-  $node->path = array('alias' => $alias);
+  $book_alias = $domnode->getAttribute('id');
+  $node->path = array('alias' => $book_alias);
 
   node_save($node);
   //print_r($node);  exit(0);  //debug
-  return array($node->nid, $node->book['mlid'], $alias);
+  return array($node->nid, $node->book['mlid'], $book_alias);
 }
 
-function _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias) {
+function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias) {
   $doc1 = _docbook_node2doc($domnode);
   $title = _docbook_apply_stylesheet($doc1, 'get_title.xsl');
   $text  = _docbook_apply_stylesheet($doc1, 'xml2text.xsl');
@@ -89,7 +89,7 @@ function _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias) {
 
   $id = $domnode->getAttribute('id');
   if (!empty($id))  {
-    $alias .= '/' . $id;
+    $alias = $book_alias . '/' . $id;
     $node->path = array('alias' => $alias);
   }
 
@@ -99,7 +99,7 @@ function _docbook_import_node_docbook_section($domnode, $bid, $plid, $alias) {
 
   node_save($node);
   //print_r($node);  exit(0);  //debug
-  return array($node->book['mlid'], $alias);
+  return $node->book['mlid'];
 }
 
 /**
