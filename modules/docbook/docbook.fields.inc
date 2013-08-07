@@ -55,7 +55,7 @@ function _docbook_install_fields() {
       'settings' => array(
         'allowed_values' => array(
           array(
-            'vocabulary' => 'tags',
+            'vocabulary' => 'docbook_keywords',
             'parent' => '0',
           ),
         ),

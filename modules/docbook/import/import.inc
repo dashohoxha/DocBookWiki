@@ -76,7 +76,7 @@ function _docbook_import_node_docbook($domnode) {
  * Return the term id for a given term name.
  */
 function _docbook_import_get_tid($term_name) {
-  $vocabulary = 'tags';
+  $vocabulary = 'docbook_keywords';
   $arr_terms = taxonomy_get_term_by_name($term_name, $vocabulary);
   if (!empty($arr_terms)) {
     $arr_terms = array_values($arr_terms);

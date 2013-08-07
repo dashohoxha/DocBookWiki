@@ -16,6 +16,7 @@ function docbook_install() {
   // Add the node types.
   _docbook_install_create_type_docbook();
   _docbook_install_create_type_docbook_section();
+  _docbook_install_create_vocabulary_keywords();
 
   foreach (_docbook_install_fields() as $field) {
     field_create_field($field);
@@ -74,6 +75,9 @@ function docbook_uninstall() {
   variable_del('docbook_child_type');
   variable_del('docbook_block_mode');
   */
+
+  // delete vocabulary 'docbook_keywords'
+  _docbook_install_create_vocabulary_keywords();
 
   // disable the 'docbookwiki' text format
   _docbook_install_disable_format();
@@ -143,6 +147,27 @@ function _docbook_install_create_type_docbook_section() {
   variable_set('node_submitted_' . $type, 0);
   variable_set('menu_options_' . $type, array());
   variable_set('menu_parent_' . $type, 'main-menu:0');
+}
+
+/**
+ * Create a vocabulary for the docbook keywords.
+ * See:
+ * http://steindom.com/articles/creating-vocabularies-and-taxonomy-terms-programmatically-drupal-7
+ */
+function _docbook_install_create_vocabulary_keywords() {
+  $vocabulary = 'docbook_keywords';
+  if (taxonomy_vocabulary_machine_name_load($vocabulary))  return;
+  taxonomy_vocabulary_save((object) array(
+      'name' => 'DocBook Keywords',
+      'machine_name' => 'docbook_keywords',
+      'hierarchy' =>  0,
+    ));
+}
+
+function _docbook_install_delete_vocabulary_keywords() {
+  $vocabulary = 'docbook_keywords';
+  $vobj = taxonomy_vocabulary_machine_name_load($vocabulary);
+  taxonomy_vocabulary_delete($vobj->vid);
 }
 
 /**
