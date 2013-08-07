@@ -33,11 +33,13 @@ function _docbook_import_node_docbook($domnode) {
   $doc1 = _docbook_node2doc($domnode);
   $title = _docbook_apply_stylesheet($doc1, 'get_title.xsl');
   $text  = _docbook_apply_stylesheet($doc1, 'info.xsl');
+  //print($text);  //exit(0);  //debug
 
   $file = drupal_get_path('module', 'dbwiki') . "/converter/class.Info.php";
   include_once $file;
   $info = new Info;
   $info->parse($text);
+  //print_r($info);  exit(0);  //debug
 
   $node = new stdClass();
   $node->type = 'docbook';
@@ -49,14 +51,12 @@ function _docbook_import_node_docbook($domnode) {
   $node->field_dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
   $node->field_dbw_abstract['und'][0]['value'] = $info->abstract;
   $node->field_dbw_copyright['und'][0]['value'] = $info->copyright;
-  //$node->field_dbw_release['und'][0]['value'] = $info->release;
-  //$node->field_dbw_date['und'][0]['value'] = $info->date;
-  /*
+  $node->field_dbw_releaseinfo['und'][0]['value'] = $info->releaseinfo;
+  $node->field_dbw_date['und'][0]['value'] = $info->date;
   foreach ($info->keywords as $keyword) {
-    //$tid = ...
+    $tid =  _docbook_import_get_tid($keyword);
     $node->field_dbw_keywords['und'][] = array('tid' => $tid);
   }
-  */
   foreach ($info->authors as $author) {
     $str_author = implode(', ', array_values($author));
     $node->field_dbw_author['und'][] = array('value' => $str_author);
@@ -70,6 +70,27 @@ function _docbook_import_node_docbook($domnode) {
   node_save($node);
   //print_r($node);  exit(0);  //debug
   return array($node->nid, $node->book['mlid'], $book_alias);
+}
+
+/**
+ * Return the term id for a given term name.
+ */
+function _docbook_import_get_tid($term_name) {
+  $vocabulary = 'tags';
+  $arr_terms = taxonomy_get_term_by_name($term_name, $vocabulary);
+  if (!empty($arr_terms)) {
+    $arr_terms = array_values($arr_terms);
+    $tid = $arr_terms[0]->tid;
+  }
+  else {
+    $vobj = taxonomy_vocabulary_machine_name_load($vocabulary);
+    $term = new stdClass();
+    $term->name = $term_name;
+    $term->vid = $vobj->vid;
+    taxonomy_term_save($term);
+    $tid = $term->tid;
+  }
+  return $tid;
 }
 
 function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias) {
