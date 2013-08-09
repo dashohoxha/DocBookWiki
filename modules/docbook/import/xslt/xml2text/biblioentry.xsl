@@ -1,7 +1,7 @@
 <?xml version='1.0'?><!-- -*-SGML-*- -->
 <!--
 This file  is part of  DocBookWiki.  DocBookWiki is a  web application
-that  displays  and  edits  DocBook  documents.  
+that  displays  and  edits  DocBook  documents.
 
 Copyright (C) 2004, 2005 Dashamir Hoxha, dashohoxha@users.sf.net
 
@@ -31,11 +31,11 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
   <xsl:text>: </xsl:text>
   <xsl:value-of select="./biblioset/pubdate" />
   <xsl:text>, </xsl:text>
-  <xsl:value-of select="./biblioset[@relation='analytic']/authorgoup/firstname" />
+  <xsl:value-of select="./biblioset[@relation='analytic']/authorgroup/firstname" />
   <xsl:text> </xsl:text>
-  <xsl:value-of select="./authorgoup/othername" />
+  <xsl:value-of select="./authorgroup/othername" />
   <xsl:text> </xsl:text>
-  <xsl:value-of select="./authorgoup/lastname" />
+  <xsl:value-of select="./authorgroup/lastname" />
 
   <xsl:text>
 </xsl:text>

@@ -30,7 +30,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 <!-- bookinfo or articleinfo -->
 <xsl:template match="bookinfo | articleinfo">
-  <!-- author, abstract and keywordset -->
+  <!-- author, abstract, keywordset, date, releaseinfo -->
   <xsl:apply-templates select="./author" />
   <xsl:apply-templates select="./abstract" />
   <xsl:apply-templates select="./keywordset" />

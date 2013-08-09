@@ -28,6 +28,21 @@ function docbook_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
+  // The command 'docbook2dbw'
+  $items['docbook2dbw'] = array(
+    'description' => "Transform any docbook document to a form suitable for being imported to DocBookWiki.",
+    'arguments' => array(
+      'file.xml' => 'The DocBook file to be transformed (absolute path or relative to DRUPAL_ROOT).',
+    ),
+    'options' => array(
+    ),
+    'examples' => array(
+      "drush docbook2dbw test.xml" => 'Transform test.xml and output the result to stdout.',
+    ),
+    'aliases' => array('2dbw'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+  );
+
   /* TODO: describe drush commands in the file docbook-topic.txt
   // These will appear in the list of topics when `drush topic` is executed.
   // To view this topic, run `drush --include=/full/path/to/examples topic`
@@ -74,5 +89,13 @@ function docbook_drush_help($section) {
 function drush_docbook_dbw_import($file) {
   include_once drupal_get_path('module', 'docbook') . '/import/import.inc';
   docbook_import($file);
+}
+
+/**
+ * Command callback for docbook2dbw.
+ */
+function drush_docbook_docbook2dbw($file) {
+  include_once drupal_get_path('module', 'docbook') . '/import/transform.inc';
+  docbook_docbook2dbw($file);
 }
 
