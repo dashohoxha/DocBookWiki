@@ -1,0 +1,105 @@
+
+About DocBookWiki
+-----------------
+
+DocBookWiki is about creating, editing and publishing simple DocBook
+documents, quickly and easily, from a web interface.
+
+It uses a simple text markup syntax, similar to a wiki markup, to
+denote some of the most commonly used DocBook elements. Then, this
+markup is converted to HTML for being displayed on a browser, and to
+XML for exporting the documents in the DocBook/XML format.
+
+The number of tags/elements that can be used in a DocBook document is
+huge (see: http://www.docbook.org/tdg/en/html/part2.html).  However,
+fortunately, the structure of a DocBook document is very flexible, not
+all of the tags are required, and with a very small subset of them one
+can write pretty good DocBook documents. DocBookWiki employs a very
+small subset of DocBook tags, which usually are enough to write
+manuals or other technical documents for programs or applications.
+
+There is already a Book module in Drupal, which takes care of the book
+layout and navigation (the hierarchy of the pages and their order and
+relation to each other). DocBookWiki extends the features of this
+module by adding a wiki-like editing mode and by adding the ability to
+import and export DocBook/XML documents.
+
+
+Drush Commands of DocBookWiki
+-----------------------------
+
++ Get help:
+
+      drush topic docbook
+      drush help --filter=docbook
+      drush help dbw-list
+      drush help dbw-export
+      drush help dbw-import
+      drush help docbook2dbw
+
+
++ Print a list of DocBook-s:
+
+      drush dbw-list
+
+
++ Export a book from DocBookWiki in DocBook(XML) format:
+
+      rush dbw-export test-docbook > test.xml
+
+  The result of export is sent to the standard output, so we should
+  redirect it to another file.
+
+
++ Import a DocBook document into DocBookWiki:
+
+      drush dbw-import $(pwd)/file.xml
+
+  The file given as argument is expected to have an absolute path or
+  to be relative to the drupal path. For convenience we can use $(pwd)
+  in front of it, which will expand to the current working directory
+  (as an absolute path).
+
+  The DocBook/XML file that is imported is expected to be conform the
+  simple structure of the DocBookWiki, that is it contains only
+  elements and attributes that are reckognized and can be processed by
+  DocBookWiki and they are used in the correct structure.
+
+  For example, a DocBook file that is exported from DocBookWiki will
+  always be valid for being imported into DocBookWiki. However, if we
+  have an external DocBook file that we wish to import to the system,
+  we need to preprocess it first and make sure that it is in the
+  correct format, before trying to import it.
+
+
++ Preprocess a DocBook document, so that it becomes suitable for being
+  imported to DocBookWiki:
+
+      drush docbook2dbw $(pwd)/docbook.xml > dbw.xml
+
+  The result of conversion is sent to the standard output, so we
+  should redirect it to another file. It makes these transformations
+  to the input file:
+    1. The elements <sect1>, <sect2>, <sect3>, <sect4>, <sect5> are
+       converted to <section>.
+    2. If a section element that needs to have an 'id' attribute
+       (chapter, section, simplesect, appendix, bibliography) is
+       missing it, a unique id (generated automatically) is added to
+       it.
+    3. Any extra tags that are not reckognized by DocBookWiki are
+       stripped off but their text content is preserved.
+
+  Of course, this conversion is based on heuristics and is not
+  guaranteed to work correctly 100% of the times. Maybe it is possible
+  to build a conversion tool that works correctly all the times, but
+  it should be very complex (due to complexity and flexibility of
+  DocBook). A simpler solution is to customize the conversion tool for
+  the specific case of the documents that you want to convert.
+
+  The command 'docbook2dbw' can be customized by putting the specific
+  xsl files on the directiry 'docbook/import/xslt/docbook2dbw/' and
+  then including them at the end of the file
+  'docbook/import/xslt/docbook2dbw.xsl' like this:
+
+      <xsl:include href="docbook2dbw/author.xsl" />
+

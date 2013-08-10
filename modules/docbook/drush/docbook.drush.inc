@@ -13,6 +13,33 @@
 function docbook_drush_command() {
   $items = array();
 
+  // The 'dbw-list' command
+  $items['dbw-list'] = array(
+    'description' => "Print a list of DocBook-s.",
+    'arguments' => array(),
+    'options' => array(),
+    'examples' => array(
+      "drush dbw-list" => 'Print a list of DocBook-s.',
+    ),
+    'aliases' => array('dbl'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+  );
+
+  // The 'dbw-export' command
+  $items['dbw-export'] = array(
+    'description' => "Export a book from DocBookWiki in DocBook(XML) format.",
+    'arguments' => array(
+      'book_id' => 'The id (alias) of the book to be exported.',
+    ),
+    'options' => array(
+    ),
+    'examples' => array(
+      "drush dbw-export test-docbook > test.xml" => 'Export the book with alias test-docbook and store it to test.xml',
+    ),
+    'aliases' => array('dbe'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+  );
+
   // The 'dbw-import' command
   $items['dbw-import'] = array(
     'description' => "Import a DocBook file into DocBookWiki.",
@@ -22,7 +49,7 @@ function docbook_drush_command() {
     'options' => array(
     ),
     'examples' => array(
-      "drush dbw-import test.xml" => 'Import test.xml into DocBookWiki.',
+      "drush dbw-import \$(pwd)/test.xml" => 'Import test.xml into DocBookWiki.',
     ),
     'aliases' => array('dbi'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
@@ -30,23 +57,21 @@ function docbook_drush_command() {
 
   // The command 'docbook2dbw'
   $items['docbook2dbw'] = array(
-    'description' => "Transform any docbook document to a form suitable for being imported to DocBookWiki.",
+    'description' => "Transform a docbook document to a format suitable for being imported to DocBookWiki.",
     'arguments' => array(
       'file.xml' => 'The DocBook file to be transformed (absolute path or relative to DRUPAL_ROOT).',
     ),
     'options' => array(
     ),
     'examples' => array(
-      "drush docbook2dbw test.xml" => 'Transform test.xml and output the result to stdout.',
+      "drush docbook2dbw \$(pwd)/test.xml > test1.xml" => 'Transform test.xml and save the result to test1.xml.',
     ),
     'aliases' => array('2dbw'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
-  /* TODO: describe drush commands in the file docbook-topic.txt
   // These will appear in the list of topics when `drush topic` is executed.
-  // To view this topic, run `drush --include=/full/path/to/examples topic`
-  $items['docbook-exposition'] = array(
+  $items['docbook'] = array(
     'description' => dt('Importing and exporting DocBook files.'),
     'hidden' => TRUE,
     'topic' => TRUE,
@@ -54,7 +79,6 @@ function docbook_drush_command() {
     'callback' => 'drush_print_file',
     'callback arguments' => array(dirname(__FILE__) . '/docbook-topic.txt'),
   );
-  */
 
   return $items;
 }
@@ -70,17 +94,51 @@ function docbook_drush_command() {
  */
 function docbook_drush_help($section) {
   switch ($section) {
-    case 'drush:dbw-import':
-      return dt("This command will import a DocBook file into DocBookWiki.");
-      /*
     case 'drush:dbw-export':
-      return dt("This command will export a DocBook file into DocBookWiki.");
-      */
+      return dt("Export a book from DocBookWiki.");
+    case 'drush:dbw-import':
+      return dt("Import a DocBook file into DocBookWiki.");
+    case 'drush:docbook2dbw':
+      return dt("Transform a docbook document to a format suitable for being imported to DocBookWiki.");
     case 'meta:docbook:title':
       return dt("Docbook Commands");
     case 'meta:docbook:summary':
       return dt("Handle the import/export of DocBook files for DocBookWiki.");
   }
+}
+
+/**
+ * Command callback for dbw-list.
+ */
+function drush_docbook_dbw_list() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'docbook')
+    ->propertyCondition('status', 1);
+  $result = $query->execute();
+
+  foreach($result['node'] as $nid => $record) {
+    $alias = drupal_lookup_path("alias", "node/$nid");
+    if ($alias) {
+      print "$alias\n";
+    }
+    else {
+      print "node/$nid\n";
+    }
+  }
+}
+
+/**
+ * Command callback for dbw-export.
+ */
+function drush_docbook_dbw_export($alias) {
+  $path = drupal_lookup_path("source", $alias);
+  $node = menu_get_object("node", 1, $path);
+  if (empty($node)) {
+    print "\nCould find no book with alias '$alias'.\n\n";
+    exit(0);
+  }
+  print book_export_docbook($node->nid);
 }
 
 /**
