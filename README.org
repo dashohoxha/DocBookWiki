@@ -163,7 +163,7 @@
 
   - [ ] Convert existing Book nodes to DocBook and DocBook_Section.
 
-  - [ ] Import a simple DocBook document.
+  - [X] Import a simple DocBook document.
 
   - [ ] Import an HTML document (exported from Book as printer-friendly)
 
