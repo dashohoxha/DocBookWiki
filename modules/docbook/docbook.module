@@ -287,6 +287,14 @@ $indent</$section>
 }
 
 /**
+ * Implements hook_init().
+ */
+function docbook_init()
+{
+  drupal_add_css(drupal_get_path('module', 'docbook') . '/docbook.css');
+}
+
+/**
  * Implements hook_theme().
  */
 function docbook_theme($existing, $type, $theme, $path) {
