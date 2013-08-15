@@ -305,6 +305,8 @@ function docbook_theme($existing, $type, $theme, $path) {
     'node__docbook_section' => array(
       'template' => 'node--docbook-section' ,
     ),
+    'field__field_dbw_author' => array(
+    ),
   );
 }
 
@@ -321,4 +323,31 @@ function docbook_preprocess_node(&$variables) {
   if ($variables['type'] == 'docbook_section') {
     $variables['variable2'] = 'hello2';
   }
+}
+
+/**
+ * Implementing theme function theme_HOOK().
+ * Initial implementation is copied verbatim from
+ * modules/field/field.module::theme_field()
+ */
+function theme_field__field_dbw_author($variables) {
+  $output = '';
+
+  // Render the label, if it's not hidden.
+  if (!$variables['label_hidden']) {
+    $output .= '<div class="field-label"' . $variables['title_attributes'] . '>' . $variables['label'] . ':&nbsp;</div>';
+  }
+
+  // Render the items.
+  $output .= '<div class="field-items"' . $variables['content_attributes'] . '>';
+  foreach ($variables['items'] as $delta => $item) {
+    $classes = 'field-item ' . ($delta % 2 ? 'odd' : 'even');
+    $output .= '<div class="' . $classes . '"' . $variables['item_attributes'][$delta] . '>' . drupal_render($item) . '</div>';
+  }
+  $output .= '</div>';
+
+  // Render the top-level DIV.
+  $output = '<div class="' . $variables['classes'] . '"' . $variables['attributes'] . '>' . $output . '</div>';
+
+  return $output;
 }
