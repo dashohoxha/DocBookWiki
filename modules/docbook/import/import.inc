@@ -105,6 +105,7 @@ function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias
   $node->title = $title;
   $node->language = LANGUAGE_NONE;
   $node->field_dbw_content['und'][0]['value'] = $text;
+  $node->field_dbw_content['und'][0]['format'] = 'docbookwiki';
   $node->field_dbw_sectype['und'][0]['value'] = $domnode->nodeName;
   $node->field_dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
 
