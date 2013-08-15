@@ -37,7 +37,7 @@ function docbook_drush_command() {
       "drush dbw-export test-docbook > test.xml" => 'Export the book with alias test-docbook and store it to test.xml',
     ),
     'aliases' => array('dbe'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
 
   // The 'dbw-import' command
@@ -49,10 +49,10 @@ function docbook_drush_command() {
     'options' => array(
     ),
     'examples' => array(
-      "drush dbw-import \$(pwd)/test.xml" => 'Import test.xml into DocBookWiki.',
+      "drush -u admin dbw-import \$(pwd)/test.xml" => 'Import test.xml into DocBookWiki as user admin.',
     ),
     'aliases' => array('dbi'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_LOGIN,
   );
 
   // The command 'docbook2dbw'
@@ -67,7 +67,7 @@ function docbook_drush_command() {
       "drush docbook2dbw \$(pwd)/test.xml > test1.xml" => 'Transform test.xml and save the result to test1.xml.',
     ),
     'aliases' => array('2dbw'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
 
   // These will appear in the list of topics when `drush topic` is executed.
@@ -75,7 +75,7 @@ function docbook_drush_command() {
     'description' => dt('Importing and exporting DocBook files.'),
     'hidden' => TRUE,
     'topic' => TRUE,
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
     'callback' => 'drush_print_file',
     'callback arguments' => array(dirname(__FILE__) . '/docbook-topic.txt'),
   );

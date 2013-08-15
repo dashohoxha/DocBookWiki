@@ -45,7 +45,7 @@ Drush Commands of DocBookWiki
 
 + Export a book from DocBookWiki in DocBook(XML) format:
 
-      rush dbw-export test-docbook > test.xml
+      drush dbw-export test-docbook > test.xml
 
   The result of export is sent to the standard output, so we should
   redirect it to another file.
@@ -53,7 +53,9 @@ Drush Commands of DocBookWiki
 
 + Import a DocBook document into DocBookWiki:
 
-      drush dbw-import $(pwd)/file.xml
+      drush -u admin dbw-import $(pwd)/file.xml
+
+  Author of the imported content will be the user 'admin'.
 
   The file given as argument is expected to have an absolute path or
   to be relative to the drupal path. For convenience we can use $(pwd)
