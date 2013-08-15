@@ -106,7 +106,7 @@ function _docbook_install_create_type_docbook() {
 
   // Default to not promoted.
   //variable_set('additional_settings__active_tab_' . $type, 'edit-menu');
-  variable_set('node_preview_' . $type, 2);
+  variable_set('node_preview_' . $type, 0);
   variable_set('node_options_' . $type, array('status'));
   variable_set('node_submitted_' . $type, 0);
   variable_set('menu_options_' . $type, array());
@@ -142,7 +142,7 @@ function _docbook_install_create_type_docbook_section() {
 
   // Default to not promoted.
   //variable_set('additional_settings__active_tab_' . $type, 'edit-menu');
-  variable_set('node_preview_' . $type, 2);
+  variable_set('node_preview_' . $type, 0);
   variable_set('node_options_' . $type, array('status'));
   variable_set('node_submitted_' . $type, 0);
   variable_set('menu_options_' . $type, array());

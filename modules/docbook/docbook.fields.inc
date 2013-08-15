@@ -283,6 +283,11 @@ function _docbook_install_instancies() {
       'settings' => array(
         'text_processing' => '1',
       ),
+      'display' => array(
+        'default' => array(
+          'label' => 'hidden',
+        ),
+      ),
     ),
   );
 }

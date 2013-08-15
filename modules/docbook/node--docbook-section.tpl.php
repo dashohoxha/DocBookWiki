@@ -100,6 +100,11 @@
       // We hide the comments and links now so that we can render them later.
       hide($content['comments']);
       hide($content['links']);
+
+      // don't render fields dbw_id and dbw_doctype
+      hide($content['field_dbw_id']);
+      hide($content['field_dbw_sectype']);
+
       print render($content);
     ?>
   </div>
