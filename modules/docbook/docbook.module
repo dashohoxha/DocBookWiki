@@ -327,10 +327,10 @@ function docbook_preprocess_node(&$variables) {
 
 /**
  * Implementing theme function theme_HOOK().
- * Initial implementation is copied verbatim from
- * modules/field/field.module::theme_field()
  */
 function theme_field__field_dbw_author($variables) {
+  //krumo($variables);  //debug
+
   $output = '';
 
   // Render the label, if it's not hidden.
@@ -342,7 +342,7 @@ function theme_field__field_dbw_author($variables) {
   $output .= '<div class="field-items"' . $variables['content_attributes'] . '>';
   foreach ($variables['items'] as $delta => $item) {
     $classes = 'field-item ' . ($delta % 2 ? 'odd' : 'even');
-    $output .= '<div class="' . $classes . '"' . $variables['item_attributes'][$delta] . '>' . drupal_render($item) . '</div>';
+    $output .= '<div class="' . $classes . '"' . $variables['item_attributes'][$delta] . '>' . _docbook_render_author($item['#markup']) . '</div>';
   }
   $output .= '</div>';
 
@@ -350,4 +350,31 @@ function theme_field__field_dbw_author($variables) {
   $output = '<div class="' . $variables['classes'] . '"' . $variables['attributes'] . '>' . $output . '</div>';
 
   return $output;
+}
+
+function _docbook_render_author($author) {
+  list($firstname, $lastname, $email, $org, $org_url) = explode(',', $author, 5);
+  $firstname = trim($firstname);
+  $lastname = trim($lastname);
+  $email = trim($email);
+  $org = trim($org);
+  $org_url = trim($org_url);
+
+  if (empty($email)) {
+    $name = "$firstname $lastname";
+  }
+  else {
+    $name = "<a href='mailto:$email'>$firstname $lastname</a>";
+  }
+
+  if (!empty($org) and !empty($org_url)) {
+    $org = "<a href='$org_url'>$org</a>";
+  }
+
+  if (empty($org)) {
+    return $name;
+  }
+  else {
+    return "$name, $org";
+  }
 }
