@@ -100,6 +100,19 @@
       // We hide the comments and links now so that we can render them later.
       hide($content['comments']);
       hide($content['links']);
+
+      // don't render fields dbw_id and dbw_doctype
+      hide($content['field_dbw_id']);
+      hide($content['field_dbw_doctype']);
+
+      // change the default rending order of the content fields
+      print render($content['field_dbw_abstract']);
+      print render($content['field_dbw_keywords']);
+      print render($content['field_dbw_author']);
+      print render($content['field_dbw_date']);
+      print render($content['field_dbw_releaseinfo']);
+      //print render($content['field_dbw_copyright']);
+
       print render($content);
     ?>
   </div>
