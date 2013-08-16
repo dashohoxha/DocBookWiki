@@ -1,0 +1,40 @@
+variable:menu_options_docbook
+variable:menu_options_docbook_section
+variable:menu_parent_docbook
+variable:menu_parent_docbook_section
+variable:node_options_docbook
+variable:node_options_docbook_section
+variable:node_preview_docbook
+variable:node_preview_docbook_section
+variable:node_submitted_docbook
+variable:node_submitted_docbook_section
+field:node-docbook-field_dbw_doctype
+field:node-docbook-field_dbw_id
+field:node-docbook-field_dbw_abstract
+field:node-docbook-field_dbw_keywords
+field:node-docbook-field_dbw_author
+field:node-docbook-field_dbw_date
+field:node-docbook-field_dbw_releaseinfo
+field:node-docbook-field_dbw_copyright
+field:node-docbook_section-field_dbw_sectype
+field:node-docbook_section-field_dbw_id
+field:node-docbook_section-field_dbw_content
+field:comment-comment_node_docbook-comment_body
+field:comment-comment_node_docbook_section-comment_body
+filter:docbookwiki
+node:docbook
+node:docbook_section
+taxonomy:docbook_keywords
+user_permission:use text format docbookwiki
+user_permission:create docbook content
+user_permission:edit own docbook content
+user_permission:edit any docbook content
+user_permission:delete own docbook content
+user_permission:delete any docbook content
+user_permission:create docbook_section content
+user_permission:edit own docbook_section content
+user_permission:edit any docbook_section content
+user_permission:delete own docbook_section content
+user_permission:delete any docbook_section content
+user_permission:edit terms in docbook_keywords
+user_permission:delete terms in docbook_keywords

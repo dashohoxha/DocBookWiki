@@ -5,6 +5,12 @@ core = 7.x
 ;configure = admin/content/docbook/settings
 ;stylesheets[all][] = docbook.css
 
+dependencies[] = 'node'
 dependencies[] = 'book'
 dependencies[] = 'dbwiki'
 dependencies[] = 'filter'
+dependencies[] = 'taxonomy'
+dependencies[] = 'field_sql_storage'
+dependencies[] = 'list'
+dependencies[] = 'options'
+dependencies[] = 'text'

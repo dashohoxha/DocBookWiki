@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the docbookwiki_docbook feature.
+ */
+
+include_once 'docbookwiki_docbook.features.inc';
