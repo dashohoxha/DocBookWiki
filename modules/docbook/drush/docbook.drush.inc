@@ -67,7 +67,7 @@ function docbook_drush_command() {
       "drush docbook2dbw \$(pwd)/test.xml > test1.xml" => 'Transform test.xml and save the result to test1.xml.',
     ),
     'aliases' => array('2dbw'),
-    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
   // These will appear in the list of topics when `drush topic` is executed.

@@ -1,0 +1,1764 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd">
+
+<article id="gateway_server">
+  <title>Installing and Configuring a Simple Gateway Server</title>
+  <articleinfo>
+    <author>
+      <firstname>Dashamir</firstname>
+      <surname>Hoxha</surname>
+      <affiliation>
+        <orgname>
+          <ulink url="http://www.inima.al">INIMA</ulink>
+        </orgname>
+        <address>
+          <email>dhoxha@inima.al</email>
+        </address>
+      </affiliation>
+    </author>
+    <abstract>
+      <para>This tutorial describes the installation and configuration of a small GNU/Linux server that is used as gateway to the Internet and as a web server for a small company or institution. It takes a practical approach, describing all the steps in details, with all the commands that are used in a concrete example.</para>
+    </abstract>
+    <copyright>
+      <year>2004</year>
+      <holder>Dashamir Hoxha</holder>
+    </copyright>
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.1 or any later version published by the Free Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License."</para>
+    </legalnotice>
+  </articleinfo>
+  <section id="intro">
+    <title>Introduction</title>
+    <para>This tutorial describes the installation and configuration of a small GNU/Linux server that is used as gateway to the Internet and as a web server for a small company or institution. It takes a practical approach, describing all the steps in details, with all the commands that are used in a concrete example.</para>
+    <section id="intro-audience">
+      <title>Who Should Read This Tutorial</title>
+      <para>Anybody that wants to learn how to install a gateway GNU/Linux server can read this tutorial. However, it assumes that the reader has some experience with GNU/Linux and it does not explain everything in details. The intended audience is the newbie GNU/Linux admins, not the newbie GNU/Linux users. So, if you have no previous experience with GNU/Linux, it will be hard to understand and to follow the instructions in the tutorial, and you have better to start with some introductory tutorials first, e.g. <ulink url="http://www.tldp.org/LDP/intro-linux/html/index.html">Introduction to Linux -- A Hands on Guide</ulink></para>
+      <para>In order to help you understand whether you can follow this tutorial easily, try to answer the following questions. If you can answer them positively, then most probably you can follow the instructions easily.</para>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>Have you ever used GNU/Linux? Do you know what is Fedora?</para>
+        </listitem>
+        <listitem>
+          <para>Have you ever installed a GNU/Linux system yourself? Do you know what is a partition? Do you know what is a <emphasis>swap</emphasis> partition?</para>
+        </listitem>
+        <listitem>
+          <para>Have you ever used the commands of GNU/Linux? Do you know what is a <emphasis>terminal</emphasis> ? Have you ever used <emphasis>ls</emphasis> , <emphasis>cd</emphasis> , <emphasis>mkdir</emphasis> , <emphasis>cp</emphasis> , <emphasis>rm</emphasis> ?</para>
+        </listitem>
+        <listitem>
+          <para>Do you know what is <emphasis>bash</emphasis> ? Do you know what are <emphasis>shell scripts</emphasis> ?</para>
+        </listitem>
+        <listitem>
+          <para>Have you ever configured a network interface yourself? Do you know what is an <emphasis>IP</emphasis> and a <emphasis>netmask</emphasis> ?</para>
+        </listitem>
+        <listitem>
+          <para>Do you know what are services? Have you ever heard about <emphasis>DNS</emphasis> , <emphasis>sendmail</emphasis> , <emphasis>apache</emphasis> ?</para>
+        </listitem>
+        <listitem>
+          <para>Have you ever used the <emphasis>vi</emphasis> editor?</para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="intro-story">
+      <title>The Story</title>
+      <para>This tutorial is based on a concrete example, which will be described here. Suppose that a small organization (or company, institution, etc.) has a small network of computers and it is connected to Internet using a small router/modem. The diagram below shows how the components of the network are connected physically. The router and the computers are connected in an ethernet network by means of a HUB (which is represented in the picture by the thick line).</para>
+      <figure float="0" id="fig-physical-diagram">
+        <title>Physical diagram of the network</title>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="media/intro/intro-story/"/>
+          </imageobject>
+          <textobject>
+            <phrase>The way that the components of the network are connected physically.  There is a router/modem that provides connection to the Internet. The router and the computers are connected in an ethernet network by means of a HUB (which is represented in the picture by the thick line).</phrase>
+          </textobject>
+        </mediaobject>
+      </figure>
+      <para>What we want to do is to place a GNU/Linux server between the router and the rest of the local network, so that it serves as a gateway for it. This way it can protect the network with a firewall, it can serve as a web server for the company, etc. We want to use <acronym>SNAT</acronym> (Source Network Address Translation, called also <emphasis>Masquerading</emphasis> ), so that the local computers can access the Internet, but they cannot be accessed from outside. However, we want to be able to access from outside the port 1972 of a database server that is in the local network. For this, we are going to use <acronym>DNAT</acronym> (Destination Network Address Translation, also called <emphasis>port forwarding</emphasis> ).</para>
+      <para>Another goal is to make this change in network configuration seamlessly and painlessly, so that the staff of the organization does not experience any interruption in the Internet connection, and we don't have to work all the night in order to do it. For this reason we are going to do it in two steps. First we are going to configure the server according to the following diagram:</para>
+      <figure float="0" id="fig-first-config">
+        <title>First configuration of the network</title>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="media/intro/intro-story/"/>
+          </imageobject>
+          <textobject>
+            <phrase/>
+          </textobject>
+        </mediaobject>
+      </figure>
+      <para>In this network configuration the GNU/Linux server can perform all of its functions: gateway, web server, port-forwarding, etc. However the other computers can choose either the GNU/Linux server, or the router itself as gateway. This ensures that the Internet connection is not interrupted for the local network, during the time that the server is installed and tested. Also, the switch to the new gateway can be done gracefully, one by one, without Internet connection interruption.</para>
+      <para>Once the server is installed and tested, and once all the computers switch to the new gateway, we can change the configuration of the network as shown in the diagram below:</para>
+      <figure float="0" id="fig-second-config">
+        <title>Second configuration of the network</title>
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="media/intro/intro-story/"/>
+          </imageobject>
+          <textobject>
+            <phrase/>
+          </textobject>
+        </mediaobject>
+      </figure>
+      <para>In this configuration the local network can access the Internet only through the GNU/Linux server. However, the local computers don't need to change the gateway, it is the same as before: 10.10.3.100. The physical connection doesn't need to be changed as well: the router, the server and the local machines are still connected to the HUB, same as before.</para>
+      <para>During the configuration of the server we will take care so that we can switch instantly from the first configuration to the second configuration (we will see later how).</para>
+    </section>
+    <section id="intro-requirements">
+      <title>Requirements</title>
+      <para>The minimal requirements for the GNU/Linux server are:</para>
+      <itemizedlist>
+        <listitem>
+          <para>Pentium I, CPU</para>
+        </listitem>
+        <listitem>
+          <para>64MB RAM</para>
+        </listitem>
+        <listitem>
+          <para>1GB HDD</para>
+        </listitem>
+        <listitem>
+          <para>Floppy drive (no need for CD-ROM drive)</para>
+        </listitem>
+        <listitem>
+          <para>Two ethernet network cards.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+  <section id="install">
+    <title>Installation</title>
+    <para>Lets say that the hard-disk of the server is 3GB and it is partitioned as seen in the figure.</para>
+    <figure float="0">
+      <title>Partitions of the disk</title>
+      <screen>
+        hda1           hda2                     hda3
+  +---------------+-------------+-----------------------------------+
+  | rescue 800 MB | swap 200 MB |          server 2GB               |    
+  +---------------+-------------+-----------------------------------+
+</screen>
+    </figure>
+    <para>The first partition holds a minimal GNU/Linux installation, which can be used as a rescue system in case that something goes wrong in the server and it becomes inaccessible. It needs actually less than 800 MB, however lets have some space in order to backup any configuration files etc. The rescue partition can be omitted, however the installations described in the tutorial assume the above configuration of the disk partitions.</para>
+    <para>The swap partition is about twice as the size of RAM. The server partition is about 2GB. It can be even less than 1GB, however it is good to have some free space since we are using it as a web server, and maybe we will need to install anything else later.</para>
+    <para>The installation is based on Fedora1 and it is done from Internet, using a boot floppy and a network drivers floppy.</para>
+    <section id="install-installationserver">
+      <title>Prepare the Installation Server</title>
+      <para>An installation server contains the installation disks of GNU/Linux and makes them accessible through NFS or FTP or HTTP. Our installation server will make available Fedora1 through HTTP.</para>
+      <note>
+        <para>This section can be skipped in case that you don't want to prepare your own installation server but instead want to do the installation directly from the Internet. However, an installation server can be useful for other local installations as well.</para>
+      </note>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>First download Fedora. I will describe a scenario below however it may change according to the distribution, ftp server, etc. For a list of download mirrors where you can find Fedora, see <ulink url="http://fedora.redhat.com/download/mirrors.html"/> .
+<screen>
+<prompt>bash#</prompt> <command>mkdir <replaceable>/var/local/fedora1</replaceable></command>
+<prompt>bash#</prompt> <command>cd /var/local/fedora1</command>
+<prompt>bash#</prompt> <command>lftp <replaceable>ftp://ftp.easynet.nl</replaceable></command>
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>cd mirror/fedora/1/i386/iso/</command>
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>ls</command>
+-rw-r--r--   1 ftp      easynet 669122560 Sep  3 21:54 yarrow-i386-disc1.iso
+-rw-r--r--   1 ftp      easynet 677511168 Mar 14  2003 yarrow-i386-disc2.iso
+-rw-r--r--   1 ftp      easynet 508592128 Mar 14  2003 yarrow-i386-disc3.iso
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>at <replaceable>00:30 tomorrow</replaceable> -- get yarrow-i386-disc1.iso &amp;</command>
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>at <replaceable>02:30 tomorrow</replaceable> -- get yarrow-i386-disc2.iso &amp;</command>
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>at <replaceable>04:30 tomorrow</replaceable> -- get yarrow-i386-disc3.iso &amp;</command>
+<prompt>lftp ftp.easynet.nl:~&gt;</prompt> <command>exit bg</command>
+</screen>
+The download is scheduled for after midnight, so that it does not block the network traffic.</para>
+        </listitem>
+        <listitem>
+          <para>Create a script that will mount the Fedora1 ISO disks:
+<screen>
+<prompt>bash#</prompt> <command>vi /var/local/fedora1/mount-fedora-discs.sh</command>
+</screen><programlisting>
+#!/bin/bash
+
+cd /var/local/fedora1
+mount -t iso9660 -o loop yarrow-i386-disc1.iso disc1/
+mount -t iso9660 -o loop yarrow-i386-disc2.iso disc2/
+mount -t iso9660 -o loop yarrow-i386-disc3.iso disc3/
+</programlisting>
+Make it executable:
+<screen>
+<prompt>bash#</prompt> <command>chmod 755 /var/local/fedora1/mount-fedora-discs.sh</command>
+</screen></para>
+        </listitem>
+        <listitem>
+          <para>Mount the Fedora1 ISO disks:
+<screen>
+<prompt>bash#</prompt> <command>cd /var/local/fedora1/</command>
+<prompt>bash#</prompt> <command>mkdir disc1</command>
+<prompt>bash#</prompt> <command>mkdir disc2</command>
+<prompt>bash#</prompt> <command>mkdir disc3</command>
+<prompt>bash#</prompt> <command>./mount-fedora-discs.sh</command>
+</screen>
+Mount them also each time that the computer is rebooted:
+<screen>
+<prompt>bash#</prompt> <command>vi /etc/rc.d/rc.local</command>
+</screen><programlisting>
+### mount fedora1 discs
+/var/local/fedora1/mount-fedora-discs.sh
+</programlisting></para>
+        </listitem>
+        <listitem>
+          <para>Make them accessible from the web:
+<screen>
+<prompt>bash#</prompt> <command>cd /var/www/html/</command>
+<prompt>bash#</prompt> <command>mkdir fedora1</command>
+<prompt>bash#</prompt> <command>cd fedora1/</command>
+<prompt>bash#</prompt> <command>lndir /var/local/fedora1/disc1</command>
+<prompt>bash#</prompt> <command>lndir /var/local/fedora1/disc2</command>
+<prompt>bash#</prompt> <command>lndir /var/local/fedora1/disc3</command>
+</screen><note><para>Make sure that <emphasis>apache</emphasis> is up and running:
+<screen>
+<prompt>bash#</prompt> <command>/sbin/chkconfig --list httpd</command>
+<prompt>bash#</prompt> <command>/sbin/chkconfig --level 2345 httpd on</command>
+<prompt>bash#</prompt> <command>/sbin/service httpd status</command>
+<prompt>bash#</prompt> <command>/sbin/service httpd restart</command>
+</screen></para></note></para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="install-installationfloppies">
+      <title>Prepare Installation Floppies</title>
+      <para>To prepare the floppies we will use the floppy images that we can download from the installation server. The IP <emphasis>11.22.33.44</emphasis> that is used as the IP of the installation server, should be replaced by the IP of your installation server. In case that you couldn't prepare an installation server (for any reason), you can use any public HTTP installation server that can be found at <ulink url="http://fedora.redhat.com/download/mirrors.html"/> . For example, instead of <filename>http://11.22.33.44/fedora1/</filename> you can use <ulink url="http://mirrors.kernel.org/fedora/core/1/i386/os/"/> .</para>
+      <para>To prepare the floppies, follow these steps:</para>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>Download <filename>bootdisk.img</filename> and <filename>drvnet.img</filename> from <ulink url="http://11.22.33.44/fedora1/images/"/></para>
+        </listitem>
+        <listitem>
+          <para>In GNU/Linux, use the command <command>dd</command> to write the floppies, like this:
+<screen>
+<prompt>bash$</prompt> <command>dd if=bootdisk.img of=/dev/fd0 bs=1440k</command>
+<prompt>bash$</prompt> <command>dd if=drvnet.img of=/dev/fd0 bs=1440k</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>In windows, download <filename>rawrite.exe</filename> from <ulink url="http://11.22.33.44/fedora1/dosutils/"/> , and use it like this:
+<screen>
+C:&gt; rawrite
+Enter disk image source file name: <userinput>bootdisk.img</userinput>
+Enter target diskette drive: <userinput>a:</userinput>
+Please insert a formatted diskette into drive A: and
+press --ENTER-- : <userinput>[Enter]</userinput>
+C:&gt;</screen></para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="install-rescuesystem">
+      <title>Install Rescue System</title>
+      <para>The installation of <emphasis>Rescue</emphasis> can be done using the first installation floppy. At the <prompt>boot:</prompt> prompt type <command>linux dd</command> :
+<screen>
+<prompt>boot:</prompt> <command>linux dd</command></screen>
+The parameter <emphasis>dd</emphasis> tells to the kernel that we have a <emphasis>driver disk</emphasis> , so, after the kernel is loaded, it will ask for driver floppies. At this time we insert the network drivers floppy (the second floppy), and after that the kernel will be able to configure and use the network cards, so that it can perform the rest of the installation from the Internet.</para>
+      <para>Before continuing with the installation, it will ask for the installation method (select <emphasis>HTTP</emphasis> ), for the installation server and path (set <ulink url="http://11.22.33.44/fedora1/"/> ), for the parameters of the network card and the network (IP, NETMASK, GATEWAY, DNS SERVER, etc.). It will retrieve the installation program from the installation server and the rest of the installation is just like a normal (CD-ROM) installation.</para>
+      <para>Make sure that when you select the packages, you select no packages at all; this does not mean that no packages at all will be installed, it means that only the most necessary packages will be installed and no additional packages (a minimal installation).</para>
+      <para>Alternatively, the installation of the <emphasis>Rescue</emphasis> system can be done almost automatically like this:</para>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>
+      Create a <emphasis>kickstart file</emphasis> :
+<screen>
+<prompt>bash$</prompt> <command>vi ks.cfg</command>
+</screen><programlisting>
+# Kickstart file
+network --device eth0 --bootproto static --ip 10.10.3.101 
+        --netmask 255.255.255.0 --gateway 10.10.3.253 
+        --nameserver 11.22.33.44 --hostname rescue
+network --device eth1 --bootproto static --ip 10.10.3.100 
+        --netmask 255.255.255.0 --gateway 10.10.3.253 
+        --nameserver 11.22.33.44 --hostname rescue
+url --url http://11.22.33.44/fedora1
+lang en_US.UTF-8
+langsupport --default en_US.UTF-8 en_US.UTF-8
+timezone Europe/Tirane
+keyboard us
+install
+rootpw --iscrypted $1$FpTm50gJ$gL82MlzncIjZA6MPUGkBD/
+firewall --enabled --http --ssh
+authconfig --enableshadow --enablemd5
+mouse none
+skipx
+bootloader --location=mbr --lba32
+#use existing partitions
+part / --fstype ext3 --onpart hda3
+part swap --onpart hda2
+reboot
+                                                                                
+%packages
+
+%post
+</programlisting><tip><para>A kickstart file can also be created using the <application>Kickstart Configurator</application>, by selecting the menu 
+<guimenu>System Tools</guimenu><guimenuitem>Kickstart</guimenuitem>.</para></tip></para>
+        </listitem>
+        <listitem>
+          <para>
+      Write it to the first floppy:
+<screen>
+<prompt>bash$</prompt> <command>mount /mnt/floppy</command>
+<prompt>bash$</prompt> <command>cp ks.cfg /mnt/floppy</command>
+</screen></para>
+        </listitem>
+        <listitem>
+          <para>
+      At the time of installation write this at the <prompt>boot:</prompt> prompt:
+<screen>
+<prompt>boot:</prompt> <command>linux dd ks=floppy</command></screen></para>
+        </listitem>
+      </orderedlist>
+      <para>Then the rest of the installation should continue without intervention.</para>
+      <note>
+        <para>
+    It is better to write <filename>ks.cfg</filename> in both floppies, in case that you forget to swap the floppies after the network drivers are loaded.
+  </para>
+      </note>
+    </section>
+    <section id="install-serversystem">
+      <title>Install Server System</title>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>
+      Create the file <filename>ks-server.cfg</filename> (<xref linkend="install-serversystem-kickstart"/>) and write it on both floppies. If there is not enough space in the first floppy, remove some of the files <filename>*.msg</filename> .
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+      Modify the file <filename>syslinux.cfg</filename> (<xref linkend="install-serversystem-syslinux"/>) in the boot floppy (first floppy) by adding the following lines:
+<programlisting>
+default server
+prompt 1
+timeout 300
+</programlisting><programlisting>
+label server
+  kernel vmlinuz
+  append dd ks=floppy:/ks-server.cfg initrd=initrd.img ramdisk_size=8192
+</programlisting>
+      If it is readonly, make it writable first.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+      Reboot the machine with the boot floppy in and write at the prompt:
+<screen>
+<prompt>boot:</prompt> <userinput>server</userinput>
+</screen>
+or just pres <userinput>[enter]</userinput> , since it is the default.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+      Wait until the installation is finished.
+    </para>
+        </listitem>
+      </orderedlist>
+      <section id="install-serversystem-kickstart">
+        <title>ks-server.cfg</title>
+        <para>This is the kickstart file that is used to automate the installation of the server. The post-install script at the end of the file does the configuration of the server after installation. However, the configuration steps will be described in detail later, so that they can be done manually, in case that something goes wrong at the installation time. As you can see in the <emphasis>%packages</emphasis> section, there are more packages than we need, in case that we may need them later.</para>
+        <programlisting>
+# Kickstart file
+network --device eth0 --bootproto static --ip 10.10.3.101 \
+        --netmask 255.255.255.0 --gateway 10.10.3.253 \
+        --nameserver 11.22.33.44 --hostname gateway
+network --device eth1 --bootproto static --ip 10.10.3.100 \
+        --netmask 255.255.255.0 --gateway 10.10.3.253 \
+        --nameserver 11.22.33.44 --hostname gateway
+url --url http://11.22.33.44/fedora1
+lang en_US.UTF-8
+langsupport --default en_US.UTF-8 en_US.UTF-8
+timezone Europe/Tirane
+keyboard us
+install
+rootpw --iscrypted $1$FpTm50gJ$gL82MlzncIjZA6MPUGkBD/
+firewall --enabled --http --ssh
+authconfig --enableshadow --enablemd5
+mouse none
+skipx
+bootloader --location=mbr --lba32
+#use existing partitions
+part / --fstype ext3 --onpart hda3
+part swap --onpart hda2
+reboot
+
+%packages --resolvedeps
+@ web-server
+@ mail-server
+@ dns-server
+@ dialup
+@ sql-server
+@ editors
+@ admin-tools
+@ system-tools
+@ ftp-server
+@ text-internet
+grub
+kernel
+samba
+samba-swat
+
+%post
+
+### This script configures the system after installation
+
+cd /
+
+### get config.tgz from /dev/hda1
+mkdir /mnt/hda1
+mount /dev/hda1 /mnt/hda1
+cp /mnt/hda1/backup/config.tgz .
+### alternatively, it can be downloaded from the web
+# wget http://11.22.33.44/backup/config.tgz
+
+### restore some configuration files
+tar xvpfz config.tgz
+
+### install boot menu
+/sbin/grub-install --force-lba /dev/hda
+
+### start httpd
+/sbin/chkconfig --level 2345 httpd on
+/sbin/service httpd start
+
+### configure and start samba
+/usr/sbin/useradd samba
+chgrp samba /var/www/html
+chmod 775 /var/www/html
+/sbin/chkconfig --level 2345 smb on
+/sbin/service smb start
+</programlisting>
+      </section>
+      <section id="install-serversystem-syslinux">
+        <title>syslinux.cfg</title>
+        <para>This configuration file helps to perform the installation in several ways, by passing different parameters to the installation program. The parameters <emphasis>dd</emphasis> and <emphasis>ks=floppy:/ks-server.cfg</emphasis> in the <emphasis>server</emphasis> entry, tell to it that we have a <emphasis>driver disk</emphasis> to load (which contains the network drivers), and that installation will be based on the kickstart file <filename>ks-server.cfg</filename> in the floppy.</para>
+        <programlisting>
+default server
+prompt 1
+timeout 300
+display boot.msg
+F1 boot.msg
+F2 options.msg
+F3 general.msg
+F4 param.msg
+F5 rescue.msg
+F7 snake.msg
+label server
+  kernel vmlinuz
+  append dd ks=floppy:/ks-server.cfg initrd=initrd.img ramdisk_size=8192
+label linux
+  kernel vmlinuz
+  append initrd=initrd.img ramdisk_size=8192
+label text
+  kernel vmlinuz
+  append initrd=initrd.img text ramdisk_size=8192
+label expert
+  kernel vmlinuz
+  append expert initrd=initrd.img ramdisk_size=8192
+label lowres
+  kernel vmlinuz
+  append initrd=initrd.img lowres ramdisk_size=8192
+</programlisting>
+      </section>
+    </section>
+    <section id="install-grub">
+      <title>Fix GRUB (Bootloader Menu)</title>
+      <para>The bootloader menu will be installed in the Rescue partition, because it is safer there. Follow these steps:</para>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>
+      Open the file <filename>/boot/grub/grub.conf</filename> and edit it so that it looks like this:
+<screen>
+<prompt>bash#</prompt> <command>vi /boot/grub/grub.conf</command>
+</screen><programlisting>
+default=1
+timeout=10
+splashimage=(hd0,0)/boot/grub/splash.xpm.gz
+title Rescue
+        root (hd0,0)
+        kernel /boot/vmlinuz ro root=/dev/hda1
+        initrd /boot/initrd-2.4.22-1.2115.nptl.img
+title Gateway Server
+        root (hd0,2)
+        kernel /boot/vmlinuz ro root=/dev/hda3
+        initrd /boot/initrd-2.4.22-1.2115.nptl.img
+</programlisting></para>
+        </listitem>
+        <listitem>
+          <para>
+      Now <command>mount</command> the rescue partition and <command>chroot</command> there:
+<screen>
+<prompt>bash#</prompt> <command>mkdir /mnt/hda1</command>
+<prompt>bash#</prompt> <command>mount /dev/hda1 /mnt/hda1</command>
+<prompt>bash#</prompt> <command>/usr/sbin/chroot /mnt/hda1</command>
+</screen></para>
+        </listitem>
+        <listitem>
+          <para>
+      After <command>chroot</command> , we are in the Rescue system. Modify the file <filename>/boot/grub/grub.conf</filename> same as above.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+      Now re-install grub (it was installed first during installation):
+<screen>
+<prompt>bash#</prompt> <command>/sbin/grub-install --help</command>
+<prompt>bash#</prompt> <command>/sbin/grub-install --force-lba /dev/hda</command>
+</screen></para>
+        </listitem>
+      </orderedlist>
+    </section>
+  </section>
+  <section id="networkcfg">
+    <title>Network Configuration</title>
+    <para>The network configuration is done by the script <filename>network.sh</filename> (<xref linkend="networkcfg-network-sh"/>) and by the configuration file <filename>network.cfg</filename> (<xref linkend="networkcfg-network-cfg"/>), which is included and used by this script (and other configuration scripts as well). The server has two network interfaces, one external (eth0) and one internal (eth1). For the network configuration of the server we need to know the IP and NETMASK of these interfaces, the GATEWAY to the Internet, and the IP of the DB server to which we are going to do port forwarding. This information is stored in the file <filename>network.cfg</filename>.</para>
+    <para>This way of separating the configuration information from the configuration scripts gives us flexibility for changing the configuration quickly and safely. For example, if we need to change the gateway, all we should do is to modify <filename>network.cfg</filename> accordingly and to run the script <filename>network.sh</filename>:
+<screen>
+<prompt>bash#</prompt> <command>vi /usr/local/config/network.cfg</command>
+<prompt>bash#</prompt> <command>/usr/local/config/network.sh</command>
+</screen>
+However, if we have some standard configurations that are repeated time after time, then it is better to prepare some standard configuration files and use one of them accordingly, like this:
+<screen>
+<prompt>bash#</prompt> <command>cd /usr/local/config/</command>
+<prompt>bash#</prompt> <command>cp network.cfg.1 network.cfg</command>
+<prompt>bash#</prompt> <command>./network.sh</command>
+</screen>
+This is what we actually do in order to switch instantly from the first configuration to the second configuration (and back, if needed), do you remember from the story (<xref linkend="intro-story"/>)?</para>
+    <section id="networkcfg-checking">
+      <title>Checking</title>
+      <para>To check that the network is configured properly, the following commands can be used:
+<itemizedlist><listitem><para>Checking what addresses are assigned to the network interfaces:
+<screen>
+<prompt>bash$</prompt> <command>/sbin/ip addr help</command>
+<prompt>bash$</prompt> <command>/sbin/ip addr ls</command>
+</screen></para></listitem><listitem><para>Checking the routes:
+<screen>
+<prompt>bash$</prompt> <command>/sbin/ip route help</command>
+<prompt>bash$</prompt> <command>/sbin/ip route ls</command>
+</screen></para></listitem></itemizedlist></para>
+    </section>
+    <section id="networkcfg-network-sh">
+      <title>/usr/local/config/network.sh</title>
+      <programlisting>
+#!/bin/bash
+
+### include the configuration file
+path=$(dirname $0)
+. $path/network.cfg
+
+### set up the links, in  case that they are not up
+/sbin/ip link set eth0 up
+/sbin/ip link set eth1 up
+
+### flush any existing ip addresses of eth0 and eth1
+/sbin/ip address flush eth0
+/sbin/ip address flush eth1
+
+### add new addresses
+/sbin/ip address add $ETH0_IP/$ETH0_MASK dev eth0
+/sbin/ip address add $ETH1_IP/$ETH1_MASK dev eth1
+
+### add a default route
+/sbin/ip route add default via $GATEWAY dev eth0                                            </programlisting>
+    </section>
+    <section id="networkcfg-network-cfg">
+      <title>/usr/local/config/nework.cfg</title>
+      <programlisting>
+
+### internal interface of the router
+GATEWAY=192.168.0.1
+
+### external interface of the web server
+ETH0_IP=192.168.0.201
+ETH0_MASK=24
+
+### internal interface of the web server
+ETH1_IP=192.168.0.200
+ETH1_MASK=24
+
+### DB server interface
+DB_IP=192.168.0.10
+
+</programlisting>
+    </section>
+    <section id="networkcfg-network-cfg-1">
+      <title>/usr/local/config/network.cfg.1</title>
+      <programlisting>
+
+### internal interface of the router
+GATEWAY=10.10.3.253
+
+### external interface of the web server
+ETH0_IP=10.10.3.101
+ETH0_MASK=24
+
+### internal interface of the web server
+ETH1_IP=10.10.3.100
+ETH1_MASK=24
+
+### DB server interface
+DB_IP=10.10.3.102
+
+</programlisting>
+    </section>
+    <section id="networkcfg-network-cfg-2">
+      <title>/usr/local/config/network.cfg.2</title>
+      <programlisting>
+
+### internal interface of the router
+GATEWAY=192.168.0.1
+
+### external interface of the web server
+ETH0_IP=192.168.0.2
+ETH0_MASK=30
+
+### internal interface of the web server
+ETH1_IP=10.10.3.100
+ETH1_MASK=24
+
+### DB server interface
+DB_IP=10.10.3.102
+
+</programlisting>
+    </section>
+    <section id="networkcfg-network-cfg-3">
+      <title>/usr/local/config/network.cfg.3</title>
+      <para>This is a configuration used in another network. Suppose that we install and test the server in one network and deploy it in another one. The flexibility of the configuration scripts allows us to do this.</para>
+      <programlisting>
+
+### internal interface of the router
+GATEWAY=192.168.0.1
+
+### external interface of the web server
+ETH0_IP=192.168.0.201
+ETH0_MASK=24
+
+### internal interface of the web server
+ETH1_IP=192.168.0.200
+ETH1_MASK=24
+
+### DB server interface
+DB_IP=192.168.0.10
+
+</programlisting>
+    </section>
+  </section>
+  <section id="firewall">
+    <title>Firewall</title>
+    <para>In the firewall we will accept only the HTTP port (80), ssh port (22), FTP ports (20, 21), samba ports (137,138,139,445) and the port that will be forwarded to the DB server (1972). Everything else will be rejected. The commands that build the firewall are organized into scripts in the directory <filename>firewall/</filename>. The scripts are constructed such that they can be easily understood and modified, and such that they can allow easy modification of the firewall.</para>
+    <para>To build the firewall call the script:
+<screen>
+<prompt>bash#</prompt> <command>firewall/iptables.sh</command></screen>
+It will first destroy the previous firewall (by flashing all the iptables rules) and then build it again by appending new rules.
+</para>
+    <important>
+      <para>If you ever restart the iptables service, like this:
+<screen>
+<prompt>bash#</prompt> <command>/sbin/service iptables restart</command>
+</screen>
+then it will destroy the firewall built by <filename>firewall/iptables.sh</filename> and will build a firewall according to <filename>/etc/sysconfig/iptables</filename>. In order to avoid any bad consequences of this, modify this config file so that it contains the firewall configuration produced by our script. This can be done like this:
+<screen>
+<prompt>bash#</prompt> <command>/sbin/iptables-save | more</command>
+<prompt>bash#</prompt> <command>/sbin/iptables-save &gt; /etc/sysconfig/iptables</command>
+</screen></para>
+    </important>
+    <para>The following subsections list the firewall configuration scripts, without much explanations, since they are well commented.</para>
+    <section id="firewall-iptables-sh">
+      <title>iptables.sh</title>
+      <programlisting>
+#!/bin/bash
+### this script configures the firewall
+
+path=$(dirname $0)
+IPT=/sbin/iptables
+
+### clear all the tables
+$IPT --table filter --flush
+$IPT --table filter --delete-chain
+$IPT --table nat    --flush
+$IPT --table mangle --flush
+
+### accept by default anything in the OUTPUT chain 
+$IPT --table filter --policy OUTPUT ACCEPT
+
+### the rules of the INPUT chain
+$path/input-rules.sh
+
+### the rules of the FORWARD chain
+$path/forward-rules.sh
+
+### enable SNAT-ing
+$path/source-nat.sh enable
+
+### if there is any argument, display the rules
+if [ $# != 0 ]
+then
+  /sbin/iptables-save
+fi
+</programlisting>
+    </section>
+    <section id="firewall-input-rules-sh">
+      <title>input-rules.sh</title>
+      <programlisting>
+#!/bin/bash
+### the rules of the INPUT chain
+
+path=$(dirname $0)
+IPT='/sbin/iptables --table filter'
+APPEND="$IPT --append INPUT"
+
+### drop anything that does not match
+$IPT --policy INPUT DROP
+
+### accept anything from localhost
+$APPEND --in-interface lo --jump ACCEPT
+
+### accept any type of icmp 
+$APPEND --protocol icmp --icmp-type any --jump ACCEPT
+
+### accept already established connections
+$APPEND --match state --state ESTABLISHED,RELATED --jump ACCEPT
+
+### create the new chain LOCAL-NETWORK
+$IPT --new-chain LOCAL-NETWORK
+### for the local networks, jump to the chain LOCAL-NETWORK 
+$APPEND --in-interface ! eth0 --source 192.168.0.0/16 --jump LOCAL-NETWORK
+$APPEND --in-interface ! eth0 --source 10.0.0.0/8     --jump LOCAL-NETWORK
+### add the rules of the chain LOCAL-NETWORK
+$path/local-network-rules.sh
+
+### accept connections for ftp, ftp-data, ssh, http
+$path/port.sh 20 accept
+$path/port.sh 21 accept
+$path/port.sh 22 accept
+$path/port.sh 80 accept
+
+### reject anything else
+#$APPEND --jump REJECT --reject-with icmp-host-prohibited
+#
+# This is commented because the default policy will drop them anyway.
+# Also, if it is commented, the script 'port.sh' can be used to
+# accept or deny any other ports (by appending or deleting rules).
+# If it is uncommented, then any other rules that are added later 
+# will come after this one, and since this one matches anything, they 
+# will not be reached. The order of the rules does matter!
+
+</programlisting>
+    </section>
+    <section id="firewall-forward-rules-sh">
+      <title>forward-rules.sh</title>
+      <programlisting>
+#!/bin/bash
+### the rules of the FORWARD chain
+
+path=$(dirname $0)
+IPT='/sbin/iptables --table filter'
+APPEND="$IPT --append FORWARD"
+
+### enable forwarding in the kernel
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+### the default is to drop anything that does not match
+$IPT --policy FORWARD DROP
+
+### accept any type of icmp 
+$APPEND --protocol icmp --icmp-type any --jump ACCEPT
+
+### accept already established connections
+$APPEND --match state --state ESTABLISHED,RELATED --jump ACCEPT
+
+### forward everything from the local networks
+$APPEND --in-interface ! eth0 --source 192.168.0.0/16 --jump ACCEPT
+$APPEND --in-interface ! eth0 --source 10.0.0.0/8     --jump ACCEPT
+
+##################################################################
+## Enable some port forwardings to internal servers 
+##################################################################
+
+### get $DB_IP from the network config file
+. /usr/local/config/network.cfg
+
+### forward some ports to $DB_IP
+$path/port-forward.sh 1972 $DB_IP enable
+$path/port-forward.sh 1506 $DB_IP enable
+$path/port-forward.sh 1507 $DB_IP enable
+$path/port-forward.sh 23 $DB_IP enable
+
+### reject anything else
+#$APPEND --jump REJECT --reject-with icmp-host-prohibited
+#
+# This is commented because the default policy will drop them anyway.
+# Also, if it is commented, the script 'port-forward.sh' can be used to
+# enable or disable any other port forwardings. If it is uncommented,
+# then any other rules that are added later will come after this one,
+# and since this one matches anything, they will not be reached.
+# The order of the rules does matter!
+
+</programlisting>
+    </section>
+    <section id="firewall-local-network-rules-sh">
+      <title>local-network-rules.sh</title>
+      <programlisting>
+#!/bin/bash
+### The rules of the chain LOCAL-NETWORK.
+### This chain is used to accept some additional ports for the local
+### networks, besides the ports that are accepted in general.
+
+path=$(dirname $0)
+IPT='/sbin/iptables --table filter'
+APPEND="$IPT --append LOCAL-NETWORK"
+
+### accept samba ports
+$IPT --new-chain SAMBA
+$APPEND --jump SAMBA
+$path/samba-rules.sh
+
+### accept connections for swat
+$path/port.sh 901 accept LOCAL-NETWORK
+
+### return to the previous chain
+#$APPEND --jump RETURN
+#
+# This is commented because the default is to return to the previous chain.
+# Also, if it is commented, the script 'port.sh' can be used to
+# accept or reject any other ports (by appending or deleting rules).
+# If it is uncommented, then any other rules that are added later 
+# will come after this one, and since this one matches anything, they 
+# will not be reached. The order of the rules does matter!
+
+</programlisting>
+    </section>
+    <section id="firewall-samba-rules-sh">
+      <title>samba-rules.sh</title>
+      <programlisting>
+#!/bin/bash
+### The rules of the chain SAMBA.
+### This chain is used to accept the samba ports.
+
+### accept the udp ports 137 and 138
+APPEND='/sbin/iptables --table filter --append SAMBA'
+$APPEND --match udp --protocol udp --dport 137 --jump ACCEPT
+$APPEND --match udp --protocol udp --dport 138 --jump ACCEPT
+
+### accept the tcp ports 139 and 445
+path=$(dirname $0)
+$path/port.sh 139 accept SAMBA
+$path/port.sh 445 accept SAMBA
+
+### return to the previous chain
+$APPEND --jump RETURN
+
+</programlisting>
+    </section>
+    <section id="firewall-port-sh">
+      <title>port.sh</title>
+      <programlisting>
+#!/bin/bash
+### Accept (or deny, or show status of) tcp connections in the given port
+### by appending or deleting a rule in the given chain.
+
+function usage
+{
+  echo "Usage: $0 [port] [accept|deny|status] [chain]
+    where port is a number (like 80) or a service name (like http)
+    and chain is: INPUT, FORWARD, LOCAL-NETWORK, SAMBA, etc."
+  exit
+}
+
+if [ $# = 0 ]; then usage; fi
+
+PORT=$1
+ACTION=$2
+CHAIN=${3:-INPUT}
+
+## appends or deletes a rule, according to the parameter
+function iptables-rule
+{
+  command=$1
+  IPT=/sbin/iptables
+  $IPT --table filter --$command $CHAIN \
+       --match state --state NEW \
+       --match tcp --protocol tcp --destination-port $PORT \
+       --jump ACCEPT
+}
+
+case $ACTION in
+  accept )  iptables-rule append ;;
+  deny   )  iptables-rule delete ;;
+  *      )  /sbin/iptables-save | grep $CHAIN | grep "dport $PORT" ;;
+esac
+</programlisting>
+    </section>
+    <section id="firewall-port-forward-sh">
+      <title>port-forward.sh</title>
+      <para>Computers in the local network cannot be accessed from outside, because the proxy server is the only visible point of the local network. However, we need to access from outside the DB server (port 1972) which is in a machine behind the proxy server. This is done using port forwarding; whenever the proxy server gets a packet with a destination port 1972, it forwards it to the DB server in the local network (this is called DNAT -- Destination Network Address Translation). Then, the packets that come from the DB server are forwarded to the outside machine. The outside machine thinks that it is the proxy that is replying to it, although in fact it is a machine behind the proxy that handles its request.</para>
+      <programlisting>
+#!/bin/bash
+### enables or disables port forwardings 
+
+function usage
+{
+  echo "Usage: $0 PORT SERVER_IP [enable|disable|status]
+    where PORT is a number (like 80) or a service name (like http)
+    and SERVER_IP is the IP of the internal server."
+  exit
+}
+
+### check that there are at least 2 parameters
+if [ $# -lt 2 ]; then usage; fi
+
+PORT=$1
+SERVER_IP=$2
+ACTION=$3
+
+### append or delete the forward rules according to the parameter
+function iptables-fwd-rules
+{
+  command=$1
+  IPT=/sbin/iptables
+
+  ### get ETH0_IP and ETH1_IP from the network configuration file
+  . /usr/local/config/network.cfg
+
+  # accept the port for forwarding (both tcp and udp)
+  $IPT --table filter --$command FORWARD \
+       --match state --state NEW \
+       --match tcp --protocol tcp --dport $PORT \
+       --jump ACCEPT
+  $IPT --table filter --$command FORWARD \
+       --match tcp --protocol tcp --dport $PORT \
+       --jump ACCEPT
+
+  ### forward the port
+  $IPT --table nat --$command PREROUTING \
+       --protocol tcp --destination $ETH0_IP --dport $PORT \
+       --jump DNAT --to-destination $SERVER_IP
+
+  ### in case that $ETH1 is not gateway for $SERVER_IP
+  ### but it doesn't hurt even if $ETH1 is gateway for it
+  $IPT --table nat --$command POSTROUTING \
+       --protocol tcp --destination $SERVER_IP --dport $PORT \
+       --jump SNAT --to-source $ETH1_IP
+}
+
+case $ACTION in
+  enable  )  iptables-fwd-rules append ;;
+  disable )  iptables-fwd-rules delete ;;
+  *       )  /sbin/iptables-save | grep $SERVER_IP | grep "dport $PORT" ;;
+esac
+
+</programlisting>
+    </section>
+    <section id="firewall-source-nat-sh">
+      <title>source-nat.sh</title>
+      <para>Source Network Address Translation (SNAT) is a trick (technique) that makes the server act as a proxy for all the networks that uses it as a gateway. This is useful for protecting the local network from the outside attacks, if you own only one real IP, etc.</para>
+      <programlisting>
+#!/bin/bash
+# enable or disable source NAT (masquerading)
+
+function usage
+{
+  echo "Usage: ${0} [enable | disable | list]"
+  exit
+}
+
+### check that there is one parameter
+if [ -z $1 ]; then usage; fi
+
+ACTION=$1
+
+### get ETH0_IP from the network configuration
+. /usr/local/config/network.cfg
+
+### enable forwarding in the kernel
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+### append or delete the SNAT rules
+function iptables-snat-rule
+{
+  command=$1
+  IPT=/sbin/iptables
+
+  $IPT --table nat --$command POSTROUTING \
+       --out-interface eth0 \
+       --jump SNAT --to-source $ETH0_IP
+       # --jump MASQUERADE 
+}
+
+### list the existing SNAT rules 
+function list-snat-rules
+{
+  /sbin/iptables-save --table nat \
+      | grep -E 'SNAT|MASQUERADE' \
+      | grep --invert-match 'dport' 
+}
+
+case $ACTION in
+  enable  )  iptables-snat-rule append ;;
+  disable )  iptables-snat-rule delete ;;
+  *       )  list-snat-rules ;;
+esac
+
+</programlisting>
+    </section>
+  </section>
+  <section id="services">
+    <title>Services</title>
+    <para/>
+    <section id="webserver">
+      <title>Web Server</title>
+      <para>Check that apache is working and start it if needed:</para>
+      <screen>
+<prompt>bash#</prompt> <command>/sbin/chkconfig --list httpd</command>
+<prompt>bash#</prompt> <command>/sbin/chkconfig --level 2345 httpd on</command>
+<prompt>bash#</prompt> <command>/sbin/service httpd status</command>
+<prompt>bash#</prompt> <command>/sbin/service httpd start</command>
+</screen>
+    </section>
+    <section id="samba">
+      <title>Samba</title>
+      <para>Samba is used to share the DocumentRoot of the web server, so that everybody in the local network can update the content of the web pages from their windows machines.</para>
+      <orderedlist continuation="restarts" inheritnum="ignore">
+        <listitem>
+          <para>
+      First backup the original samba config file, <filename>/etc/samba/smb.conf</filename>, because it has some useful comments:
+<screen>
+<prompt>bash#</prompt> <command>cd /etc/samba/</command>
+<prompt>bash#</prompt> <command>mv smb.conf smb.conf.bak</command>
+</screen>
+      Then create a new config file, with a content like this:
+<screen>
+<prompt>bash#</prompt> <command>vi smb.conf</command>
+</screen><programlisting>
+[global]
+   workgroup = ORGNAME
+   server string = Web Server
+   hosts allow = 10.10.3. 192.168. 127.
+   guest account = samba
+   log file = /var/log/samba/%m.log
+   max log size = 50
+   security = share
+   socket options = TCP_NODELAY SO_RCVBUF=8192 SO_SNDBUF=8192
+
+[www]
+   path = /var/www/html
+   public = yes
+   only guest = yes
+   writable = yes
+   printable = no
+</programlisting></para>
+        </listitem>
+        <listitem>
+          <para>
+      Create the user <emphasis>samba</emphasis> and set permissions to <filename>/var/www/html</filename> so that the user <emphasis>samba</emphasis> can read and write it:
+<screen>
+<prompt>bash#</prompt> <command>/usr/sbin/useradd samba</command>
+<prompt>bash#</prompt> <command>chgrp samba /var/www/html</command>
+<prompt>bash#</prompt> <command>chmod 775 /var/www/html</command>
+</screen></para>
+        </listitem>
+        <listitem>
+          <para>
+      Start the samba service:
+<screen>
+<prompt>bash#</prompt> <command>/sbin/chkconfig --level 2345 smb on</command>
+<prompt>bash#</prompt> <command>/sbin/service smb start</command>
+</screen></para>
+        </listitem>
+        <listitem>
+          <para>
+      Don't forget that the samba ports should be accepted in firewall:
+<screen>
+<command>/sbin/iptables -A INPUT -m udp -p udp --dport 137 -j ACCEPT</command>
+<command>/sbin/iptables -A INPUT -m udp -p udp --dport 138 -j ACCEPT</command>
+<command>/sbin/iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 139 -j ACCEPT</command>
+<command>/sbin/iptables -A INPUT -m state --state NEW -m tcp -p tcp --dport 445 -j ACCEPT</command>
+</screen>
+Insert these commands to some configuration scripts, instead of running them manually time after time (our firewall scripts already take care of this).
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+      Check that the samba is working:
+<screen>
+<prompt>bash$</prompt> <command>smbclient --help</command>
+<prompt>bash$</prompt> <command>smbclient -L 10.10.3.100</command>
+<prompt>bash$</prompt> <command>smbclient //10.10.3.100/www</command>
+Password:
+<prompt>smb: \&gt;</prompt> <command>ls</command>
+<prompt>smb: \&gt;</prompt> <command>help</command>
+</screen></para>
+        </listitem>
+      </orderedlist>
+    </section>
+  </section>
+  <section id="reconfig">
+    <title>Reconfiguration</title>
+    <para>In order to make the configurations permanent, add these lines to <filename>/etc/rc.d/rc.local</filename> , so that they are executed each time that the server is rebooted:
+<screen>
+<prompt>bash#</prompt> <command>vi /etc/rc.d/rc.local</command>
+</screen><programlisting>
+### configure network interfaces
+/usr/local/config/network.sh
+
+### configure iptables (firewall and port forwarding)
+/usr/local/config/firewall/iptables.sh
+</programlisting></para>
+    <para>For updating the configuration of the server without rebooting (e.g. when something is modified in the configuration files), the script <filename>reconfig.sh</filename> (<xref linkend="reconfig-script"/>) is used. Steps needed in case of reconfiguration are these:</para>
+    <orderedlist continuation="restarts" inheritnum="ignore">
+      <listitem>
+        <para>
+      Copy <filename>network.cfg.1</filename> or <filename>network.cfg.2</filename> to <filename>network.cfg</filename>, in order to enable this configuration and disable the other.
+    </para>
+      </listitem>
+      <listitem>
+        <para>If needed, make any modifications in the firewall configuration scripts.</para>
+      </listitem>
+      <listitem>
+        <para>
+      Run the script <filename>reconfig.sh</filename> in order to change the network configuration immediately, or reboot.
+    </para>
+      </listitem>
+    </orderedlist>
+    <note>
+      <para>In case that configuration files of httpd and samba have changed, then these services have to be restarted as well:
+<screen>
+<prompt>bash#</prompt> <command>/sbin/service httpd restart</command>
+<prompt>bash#</prompt> <command>/sbin/service smb restart</command>
+</screen></para>
+    </note>
+    <caution>
+      <para>
+In case that the server is accessed and managed remotely, it is quite possible to lock yourself out, e.g. if you make a wrong configuration of the network interfaces or a mistake in the configuration of the firewall. To avoid such troubles, be cautious about new configurations and test them before making them permanent. A script like <filename>test.sh</filename> (<xref linkend="reconfig-test-sh"/>) can be used to test a new configuration. It enables the new configuration, and after a certain time (say 60 secs) it goes back to the old (tried and true) configuration. During this time you can test the new configuration and make sure that it is OK. 
+</para>
+    </caution>
+    <section id="reconfig-script">
+      <title>reconfig.sh</title>
+      <programlisting>
+#!/bin/bash
+### reconfigure the network after changing
+### any configuration variables
+
+path=$(dirname $0)
+
+### configure network interfaces
+$path/network.sh
+
+### configure iptables (firewall and port forwarding)
+$path/firewall/iptables.sh
+</programlisting>
+    </section>
+    <section id="reconfig-test-sh">
+      <title>test.sh</title>
+      <programlisting>
+#!/bin/bash
+### This script is for testing any new configurations.
+### When the server is accessed and managed remotely,
+### something may go wrong and it is possible to lock
+### yourself out. To avoid such troubles, this script
+### tests any new configs and after a certain time
+### (e.g. 60 secs) it goes back to the old (tried and true)
+### configuration. During the sleep time you can test
+### the new configuration and make sure that it is OK.
+
+mv network.cfg.2 network.cfg
+./reconfig.sh
+sleep 60
+mv network.cfg.1 network.cfg
+./reconfig.sh
+</programlisting>
+    </section>
+  </section>
+  <section id="backup">
+    <title>Backup</title>
+    <para>Most of the configuration files and scripts that are specific for this webserver, are kept in the directory <filename>/usr/local/config/</filename>, so that they can be accessed and backed up easily. Even the config files that are not in this directory have a symbolic link inside it for easy access and for having a clear idea of the config files that are modified after the installation. A listing of this directory looks like this:
+
+<screen>
+<prompt>bash$</prompt> <command>cd /usr/local/config/</command>
+<prompt>bash$</prompt> <command>ls -R</command>
+.:
+backup.sh         network.cfg    network.cfg.3  slinks
+config-files.txt  network.cfg.1  network.sh     test.sh
+firewall          network.cfg.2  reconfig.sh
+
+./firewall:
+forward-rules.sh  iptables.sh             port-forward.sh  samba-rules.sh
+input-rules.sh    local-network-rules.sh  port.sh          source-nat.sh
+
+./slinks:
+grub.conf  rc.local  smb.conf
+</screen></para>
+    <para>The backup of configuration files and scripts is done by the script <filename>backup.sh</filename>:
+
+<programlisting>
+#!/bin/bash
+
+path=$(dirname $0)
+
+tar --create --verbose --preserve-permissions --gzip \
+    --file config.tgz \
+    --files-from=$path/config-files.txt
+
+### it can be like this as well:
+#tar cvpfz config.tgz --files-from=$path/config-files.txt
+</programlisting>
+
+The script backs up all the files that are listed in the file <filename>config-files.txt</filename> :
+<screen>
+<prompt>bash#</prompt> <command>vi config-files.txt</command>
+</screen><programlisting>
+/boot/grub/grub.conf
+/etc/samba/smb.conf
+/etc/rc.d/rc.local
+/usr/local/config/
+</programlisting></para>
+    <para>Maybe you want to backup the website of the organization as well. To do this, append the line <userinput>/var/www/html/</userinput> to the file above. Alternatively, append the command <command>tar cvpfz www.tgz /var/www/html/</command> to the backup script.</para>
+    <para>In order to perform another installation of a server like this one, or a re-installation of the same server, the backup file <filename>config.tgz</filename> is placed in the installation server:
+<screen>
+<prompt>bash$</prompt> <command>ssh username@11.22.33.44 mkdir -p /var/www/html/backup/</command>
+<prompt>bash$</prompt> <command>scp config.tgz username@11.22.33.44:/var/www/html/backup/</command>
+</screen></para>
+    <para>Also, they can be backed up in the Rescue partition (together with other useful data), so that they can be accessed easily in case of re-installation:
+<screen>
+<prompt>bash#</prompt> <command>mkdir /mnt/hda1</command>
+<prompt>bash#</prompt> <command>mount /dev/hda1 /mnt/hda1</command>
+<prompt>bash#</prompt> <command>mkdir -p /mnt/hda1/backup</command>
+<prompt>bash#</prompt> <command>cp config.tgz /mnt/hda1/backup/</command>
+<prompt>bash#</prompt> <command>cp www.tgz /mnt/hda1/backup/</command>
+<prompt>bash#</prompt> <command>umount /mnt/hda1</command>
+</screen></para>
+  </section>
+  <section id="appendix">
+    <title>Appendix</title>
+    <section id="GNU-FDL">
+      <title>GNU Free Documentation License</title>
+      <para><indexterm role="cp" significance="normal"><primary>FDL, GNU Free Documentation License</primary></indexterm>Version 1.2, November 2002
+<screen>Copyright © 2000,2001,2002 Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</screen></para>
+      <orderedlist continuation="continues" numeration="arabic" inheritnum="ignore">
+        <listitem>
+          <para>
+PREAMBLE
+    </para>
+          <para>
+The purpose of this License is to make a manual, textbook, or other
+functional and useful document <firstterm>free</firstterm> in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+    </para>
+          <para>
+This License is a kind of "copyleft", which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+    </para>
+          <para>
+We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+APPLICABILITY AND DEFINITIONS
+    </para>
+          <para>
+This License applies to any manual or other work, in any medium, that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License.  Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein.  The "Document", below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as "you".  You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+    </para>
+          <para>
+A "Modified Version" of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+    </para>
+          <para>
+A "Secondary Section" is a named appendix or a front-matter section
+of the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall
+subject (or to related matters) and contains nothing that could fall
+directly within that overall subject.  (Thus, if the Document is in
+part a textbook of mathematics, a Secondary Section may not explain
+any mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+    </para>
+          <para>
+The "Invariant Sections" are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.  If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant.  The Document may contain zero
+Invariant Sections.  If the Document does not identify any Invariant
+Sections then there are none.
+    </para>
+          <para>
+The "Cover Texts" are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.  A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+    </para>
+          <para>
+A "Transparent" copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text.  A copy that is not "Transparent" is called "Opaque".
+    </para>
+          <para>
+Examples of suitable formats for Transparent copies include plain
+ascii without markup, Texinfo input format, LaTeX input
+format, <acronym>SGML</acronym> or <acronym>XML</acronym> using a publicly available
+<acronym>DTD</acronym>, and standard-conforming simple <acronym>HTML</acronym>,
+PostScript or <acronym>PDF</acronym> designed for human modification.  Examples
+of transparent image formats include <acronym>PNG</acronym>, <acronym>XCF</acronym> and
+<acronym>JPG</acronym>.  Opaque formats include proprietary formats that can be
+read and edited only by proprietary word processors, <acronym>SGML</acronym> or
+<acronym>XML</acronym> for which the <acronym>DTD</acronym> and/or processing tools are
+not generally available, and the machine-generated <acronym>HTML</acronym>,
+PostScript or <acronym>PDF</acronym> produced by some word processors for
+output purposes only.
+    </para>
+          <para>
+The "Title Page" means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, "Title Page" means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.
+    </para>
+          <para>
+A section "Entitled XYZ" means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language.  (Here XYZ stands for a
+specific section name mentioned below, such as "Acknowledgements",
+"Dedications", "Endorsements", or "History".)  To "Preserve the Title"
+of such a section when you modify the Document means that it remains a
+section "Entitled XYZ" according to this definition.
+    </para>
+          <para>
+The Document may include Warranty Disclaimers next to the notice which
+states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+VERBATIM COPYING
+    </para>
+          <para>
+You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+    </para>
+          <para>
+You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+COPYING IN QUANTITY
+    </para>
+          <para>
+If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+    </para>
+          <para>
+If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+    </para>
+          <para>
+If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+    </para>
+          <para>
+It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+MODIFICATIONS
+    </para>
+          <para>
+You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:
+    </para>
+          <orderedlist numeration="upperalpha" inheritnum="ignore" continuation="restarts">
+            <listitem>
+              <para>
+Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has fewer than five),
+unless they release you from this requirement.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+State on the Title page the name of the publisher of the
+Modified Version, as the publisher.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve all the copyright notices of the Document.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document's license notice.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Include an unaltered copy of this License.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve the section Entitled "History", Preserve its Title, and add
+to it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section Entitled "History" in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the "History" section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+For any section Entitled "Acknowledgements" or "Dedications", Preserve
+the Title of the section, and preserve in the section all the
+substance and tone of each of the contributor acknowledgements and/or
+dedications given therein.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Delete any section Entitled "Endorsements".  Such a section
+may not be included in the Modified Version.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Do not retitle any existing section to be Entitled "Endorsements" or
+to conflict in title with any Invariant Section.
+      </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve any Warranty Disclaimers.
+      </para>
+            </listitem>
+          </orderedlist>
+          <para>
+If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.
+    </para>
+          <para>
+You may add a section Entitled "Endorsements", provided it contains
+nothing but endorsements of your Modified Version by various
+parties--for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+    </para>
+          <para>
+You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+    </para>
+          <para>
+The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+COMBINING DOCUMENTS
+    </para>
+          <para>
+You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+    </para>
+          <para>
+The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+    </para>
+          <para>
+In the combination, you must combine any sections Entitled "History"
+in the various original documents, forming one section Entitled
+"History"; likewise combine any sections Entitled "Acknowledgements",
+and any sections Entitled "Dedications".  You must delete all
+sections Entitled "Endorsements."
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+COLLECTIONS OF DOCUMENTS
+    </para>
+          <para>
+You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+    </para>
+          <para>
+You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+AGGREGATION WITH INDEPENDENT WORKS
+    </para>
+          <para>
+A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an "aggregate" if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation's users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+    </para>
+          <para>
+If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+TRANSLATION
+    </para>
+          <para>
+Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+    </para>
+          <para>
+If a section in the Document is Entitled "Acknowledgements",
+"Dedications", or "History", the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+TERMINATION
+    </para>
+          <para>
+You may not copy, modify, sublicense, or distribute the Document except
+as expressly provided for under this License.  Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.
+    </para>
+        </listitem>
+        <listitem>
+          <para>
+FUTURE REVISIONS OF THIS LICENSE
+    </para>
+          <para>
+The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+http://www.gnu.org/copyleft/.
+    </para>
+          <para>
+Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License "or any later version" applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.
+    </para>
+        </listitem>
+      </orderedlist>
+      <section id="addendum">
+        <title>ADDENDUM: How to use this License for your documents
+</title>
+        <para>
+To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:
+   </para>
+        <para>
+          <screen>
+  Copyright (C)  <varname>year</varname>  <varname>your name</varname>.
+  Permission is granted to copy, distribute and/or modify this document
+  under the terms of the GNU Free Documentation License, Version 1.2
+  or any later version published by the Free Software Foundation;
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.  A copy of the license is included in the section entitled ``GNU
+  Free Documentation License''.
+     </screen>
+        </para>
+        <para>
+If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
+replace the "with...Texts." line with this:
+   </para>
+        <para>
+          <screen>
+    with the Invariant Sections being <varname>list their titles</varname>, with
+    the Front-Cover Texts being <varname>list</varname>, and with the Back-Cover Texts
+    being <varname>list</varname>.
+     </screen>
+        </para>
+        <para>
+If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+   </para>
+        <para>
+If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.
+   </para>
+      </section>
+    </section>
+  </section>
+</article>

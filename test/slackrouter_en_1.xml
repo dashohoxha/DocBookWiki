@@ -1,0 +1,1493 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://docbook.org/xml/4.5/docbookx.dtd">
+<article id="slackrouter">
+  <title>Making a Slackware Router/Gateway</title>
+  <articleinfo>
+      <author>
+      <firstname>Dashamir</firstname>
+      <surname>Hoxha</surname>
+      <email>dashohoxha@yahoo.com</email>
+      <affiliation>
+        dashohoxha@yahoo.com
+      </affiliation>
+    </author>
+    <abstract>
+      <para>This article will describe the steps to install and configure a slackware router which serves as a gateway for a LAN.</para>
+    </abstract>
+    <legalnotice>
+      <para>Copyright (C) 2005 Dashamir Hoxha. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.1 or any later version published by the Free Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts. A copy of the license is included in the section entitled "GNU Free Documentation License."</para>
+    </legalnotice>
+  </articleinfo>
+  <para/>
+  <section id="intro">
+    <title>Introduction</title>
+    <section id="problem">
+      <title>Description of the Problem</title>
+      <para>We want to manage the network connections of a LAN. For this reason a special web application is constructed which can be used to manage the clients, expiration times, registrations, etc. This web application works with apache+mysql+php. Besides it, there are also some shell scripts that manage the configuration of the server: the network configuration, the firewall (allowing/disallowing clients to connect to internet). The box gives also DHCP and DNS service to the LAN. </para>
+    </section>
+    <section id="goal">
+      <title>The Goal</title>
+      <para>The goal is to install Slackware (because it has low hardware requirements) in an old computer and to configure it as a router/gateway, as described in the section above. We should make a minimal installation (not installing too many packages). We have to install the packages related to apache, mysql and PHP (in order to support the web application), packages related to network and firewall configuration, packages related to the services that the router should provide to the LAN (DHCP, DNS), etc. </para>
+      <para>Assuming that the box does not have a CD-ROM drive, we will do the installation using floppies and network. Assuming  also that the box will be headless (without a monitor) during its normal work, we will try also to enable a serial console, so that it can be accessed by a serial cable, in case of problems. </para>
+    </section>
+    <section id="requirements">
+      <title>Hardware Requirements</title>
+      <para>We will assume that the computer to be installed as a router is an old one: 
+    <itemizedlist><listitem><para>Pentium I CPU </para></listitem><listitem><para>32MB RAM </para></listitem><listitem><para>1GB HDD </para></listitem><listitem><para>Diskette drive </para></listitem><listitem><para>No CD-ROM drive </para></listitem><listitem><para>Two network interfaces </para></listitem></itemizedlist></para>
+      <para>The installation will be done from the network, using another computer as installation server, which will export by NFS the slackware CD that contains the installation packages. </para>
+    </section>
+  </section>
+  <section id="prepare">
+    <title>Prepare</title>
+    <para/>
+    <section id="getslack">
+      <title>Get Slack</title>
+      <para>First get the Slackware CDs. They can be bought from somewhere or they can be downloaded from internet (see references). I will describe a way of downloading them from internet (these things are done in the installation server, not in the old box): </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Create a directory for them: 
+      <screen><prompt>bash$</prompt> <command>mkdir slackware</command>
+<prompt>bash$</prompt> <command>cd slackware/</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Create the file <filename>get-slack.ftp</filename> with this content: 
+      <programlisting>open ftp://ftp.bit.nl/mirror/slackware/
+cd slackware-10.2-iso
+mget -c slackware-10.2-install-*
+quit</programlisting></para>
+        </listitem>
+        <listitem>
+          <para>Start downloading them: 
+      <screen><prompt>bash$</prompt> <command>nohup lftp -f get-slack.ftp &amp;</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Check that they are downloaded correctly: 
+      <screen><prompt>bash$</prompt> <command>md5sum -c slackware-10.2-install-d1.iso.md5</command>
+<prompt>bash$</prompt> <command>md5sum -c slackware-10.2-install-d2.iso.md5</command></screen></para>
+        </listitem>
+      </orderedlist>
+      <tip>
+        <para>If you got the CDs instead, then you can copy the iso-s like this:
+
+  <screen><prompt>bash$</prompt> <command>dd if=/dev/cdrom of=slackware-10.2-install-d1.iso</command>
+<prompt>bash$</prompt> <command>dd if=/dev/cdrom of=slackware-10.2-install-d2.iso</command></screen></para>
+      </tip>
+      <para>References: </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/getslack/">The Slackware Linux Project: Get Slack </ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.fastlink-internet.com/CD/slackware/">Slack CDs in Tirana </ulink>
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section id="floppies">
+      <title>Floppy Disks</title>
+      <para>Prepare the diskettes that will be used to start the installation (4 diskettes are needed): </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Download the floppy images from the internet: 
+      <screen><prompt>bash$</prompt> <command>mkdir slack-floppies</command>
+<prompt>bash$</prompt> <command>cd slack-floppies</command>
+<prompt>bash$</prompt> <command>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2&gt;</prompt> <command>cd bootdisks</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/bootdisks&gt;</prompt> <command>get bare.i</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/bootdisks&gt;</prompt> <command>cd ../rootdisks/</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/rootdisks&gt;</prompt> <command>get install.1</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/rootdisks&gt;</prompt> <command>get install.2</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/rootdisks&gt;</prompt> <command>get network.dsk</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/rootdisks&gt;</prompt> <command>get network.dsk.README</command>
+<prompt>lftp ftp.bit.nl:/mirror/slackware/slackware-10.2/rootdisks&gt;</prompt> <command>quit</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Write the images on floppies: 
+      <screen><prompt>bash$</prompt> <command>dd if=bare.i of=/dev/fd0</command>
+<prompt>bash$</prompt> <command>dd if=install.1 of=/dev/fd0</command>
+<prompt>bash$</prompt> <command>dd if=install.2 of=/dev/fd0</command>
+<prompt>bash$</prompt> <command>dd if=network.dsk of=/dev/fd0</command></screen></para>
+        </listitem>
+      </orderedlist>
+      <para>Read also <filename>network.dsk.README</filename> . </para>
+      <para>References: </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/install/bootdisk.php"/>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/install/rootdisk.php"/>
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+    <section id="export">
+      <title>Export by NFS</title>
+      <para>Export by NFS the slackware CD in the installation server: </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Extract the content of the first CD in a directory: 
+      <screen><prompt>bash#</prompt> <command>mkdir -p /slackware/slack1</command>
+<prompt>bash#</prompt> <command>mkdir cd1</command>
+<prompt>bash#</prompt> <command>mount -o loop slackware-10.2-install-d1.iso cd1/</command>
+<prompt>bash#</prompt> <command>cp -rf cd1/* /slackware/slack1/</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Add to <filename>/etc/exports</filename> this line: 
+      <programlisting>/slackware/slack1  192.168.1.0/24(ro)</programlisting></para>
+        </listitem>
+        <listitem>
+          <para>Restart the <emphasis>nfs</emphasis> service: 
+      <screen><prompt>bash#</prompt> <command>/sbin/service nfs restart</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Make sure that the service <emphasis>portmap</emphasis> is running: 
+      <screen><prompt>bash#</prompt> <command>/sbin/service portmap status</command>
+<prompt>bash#</prompt> <command>/sbin/service portmap start</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>In case that the firewall is not properly configured, then stop it at all: 
+      <screen><prompt>bash#</prompt> <command>/sbin/service iptables stop</command></screen></para>
+        </listitem>
+      </orderedlist>
+    </section>
+  </section>
+  <section id="install">
+    <title>Installation</title>
+    <section id="install-boot">
+      <title>Boot From Floppies</title>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Boot the <emphasis>bare.i</emphasis> bootdisk. </para>
+        </listitem>
+        <listitem>
+          <para>When prompted, load the install rootdisks starting with <emphasis>install.1</emphasis> . </para>
+        </listitem>
+        <listitem>
+          <para>Log into the system with the username <emphasis>root</emphasis> . </para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="install-partition">
+      <title>Partition the Disk</title>
+      <para>Partition the drive with <command>fdisk</command> or <command>cfdisk</command> . I created a <emphasis>linux swap</emphasis> partition in <emphasis>hda1</emphasis> , and the rest of the disk (at least 200MB) as <emphasis>root</emphasis> partition in <emphasis>hda2</emphasis> . </para>
+    </section>
+    <section id="install-network">
+      <title>Configure the Network</title>
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>Start the network support system with the command <command>network</command> . Then you'll be prompted to take these actions: 
+      <orderedlist numeration="arabic"><listitem><para>Insert the <emphasis>network.dsk</emphasis> support floppy. </para></listitem><listitem><para>Probe for the network card automatically (recommended), or load the modules manually. </para></listitem><listitem><para>Remove the <emphasis>network.dsk</emphasis> support floppy. </para></listitem></orderedlist></para>
+        </listitem>
+        <listitem>
+          <para>Configure the network interface: 
+      <itemizedlist><listitem><para>Set it up and assign an IP: 
+          <screen><prompt>root@slackware:/#</prompt> <command>ifconfig eth0 up</command>
+<prompt>root@slackware:/#</prompt> <command>ifconfig eth0 192.168.252.4 netmask 255.255.255.192</command></screen></para></listitem><listitem><para>Check that it is configured ok: 
+          <screen><prompt>root@slackware:/#</prompt> <command>ifconfig</command>
+<prompt>root@slackware:/#</prompt> <command>ping 192.168.252.4</command>
+<prompt>root@slackware:/#</prompt> <command>ping 192.168.252.1</command></screen></para></listitem><listitem><para>Add a gateway, if needed: 
+          <screen><prompt>root@slackware:/#</prompt> <command>route add -net default gw 192.168.252.35 dev eth0</command>
+<prompt>root@slackware:/#</prompt> <command>route</command>
+<prompt>root@slackware:/#</prompt> <command>ping 192.168.251.195</command></screen></para></listitem></itemizedlist></para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="install-mount">
+      <title>Mount Slack CD by NFS</title>
+      <para>In slackware, start <emphasis>portmap</emphasis> and mount the slackare CD by NFS: 
+    <screen><prompt>root@slackware:/#</prompt> <command>mkdir slack</command>
+<prompt>root@slackware:/#</prompt> <command>sbin/rpc.portmap</command>
+<prompt>root@slackware:/#</prompt> <command>mount 192.168.1.11:/slackware/slack1 slack1/</command></screen></para>
+    </section>
+    <section id="install-setup">
+      <title>Install Using setup</title>
+      <para>Install slackware using the <command>setup</command> script: </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Start <command>setup</command> : 
+      <screen><prompt>root@slackware:/#</prompt> <command>setup</command></screen></para>
+        </listitem>
+        <listitem>
+          <para>Format /dev/hda1 and add it as swap. </para>
+        </listitem>
+        <listitem>
+          <para>Format /dev/hda2 as ext3 and use it as a root partition. </para>
+        </listitem>
+        <listitem>
+          <para>At SOURCE MEDIA SELECTION choose 
+      <literallayout>  4 Install from a premounted directory</literallayout>
+and set <filename>/slack1/slackware</filename> as the source directory. 
+      <note><para>Alternatively, select:
+
+  <literallayout>  3 Install from NFS</literallayout>
+Choose as the directory in the server to be mounted: <filename>/slackware/slack1/slackware</filename></para></note></para>
+        </listitem>
+        <listitem>
+          <para>At PACKAGE SERIES SELECTION choose only: 
+      <literallayout>  A   Base Linux System
+  AP  Various Applications that do not need X
+  N   Networking (TCP/IP, UUCP, Mail, News)</literallayout></para>
+        </listitem>
+        <listitem>
+          <para>At PROMPTING MODE choose <emphasis>menu</emphasis> and then select packages further. Make sure that these packages are selected: <emphasis>mysql</emphasis> , <emphasis>dnsmasq</emphasis> , <emphasis>mod_ssl</emphasis> , <emphasis>php</emphasis> , <emphasis>iproute2</emphasis> . </para>
+        </listitem>
+        <listitem>
+          <para>Choose <emphasis>Yes</emphasis> for ENABLE HOTPLUG SUBSYSTEM AT BOOT. </para>
+        </listitem>
+        <listitem>
+          <para>Install LILO at MBR. </para>
+        </listitem>
+        <listitem>
+          <para>Make sure that the following services are enabled: <emphasis>rc.dnsmasq</emphasis> , <emphasis>rc.httpd</emphasis> , <emphasis>rc.ip_forward</emphasis> , <emphasis>rc.mysqld</emphasis> . </para>
+        </listitem>
+        <listitem>
+          <para>Finally reboot. </para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="install-references">
+      <title>References</title>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/install/">Slackware Installation Help</ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/book/index.php?source=book1.html">Slackware Linux Essentials</ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.slackware.com/book/index.php?source=x1304.html">NFS (Network File System)</ulink>
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+  <section id="config">
+    <title>Configuration</title>
+    <para>After installation, some things need to be fixed (because they have problems), and also other things need to be installed as well. These things are described in these section. </para>
+    <section id="lilo">
+      <title>lilo</title>
+      <para>The default installation of lilo sets a timeout of 2 minutes (1200). But since this is a headless computer (without monitor, keyboard etc.), we should make it smaller, so that it expires quickly and the server continues the reboot. </para>
+      <para>In the file <filename>/etc/lilo.conf</filename> , change this line: 
+    <programlisting>timeout = 30</programlisting></para>
+      <para>Then reinstall lilo: 
+    <screen><prompt>bash#</prompt> <command>lilo</command></screen></para>
+      <para>Now the timeout is just 3 secs. For more details about <filename>lilo.conf</filename> see: <command>man lilo.conf</command></para>
+    </section>
+    <section id="hostname">
+      <title>hostname</title>
+      <para>Change the hostname of the server to <emphasis>gateway.localnet.net</emphasis> . In order to do this, modify the files <filename>/etc/HOSTNAME</filename> and <filename>/etc/hosts</filename> to contain <emphasis>gateway.localnet.net</emphasis> instead of the previous value. Also give the command <command>hostname gateway.localnet.net</command>. </para>
+    </section>
+    <section id="svn">
+      <title>Subversion</title>
+      <para>Subversion is needed to get and update the web application of the gateway/router. It can be found in the Slackware CD-s, or it can be downloaded from the internet. </para>
+      <tip>
+        <title>Where to Find the Slackware Package of Subversion?</title>
+        <para>Go to <ulink url="http://slackware.it/en/pb/"/> , select the slack version <emphasis>Slackware-10.2</emphasis> and the package name <emphasis>subversion</emphasis> , and then click the <emphasis>Search</emphasis> button. The result shows that it can be found in the directory <filename>slackware/d/</filename> of the CD, or it can be downloaded from one of the Slackware mirrors.</para>
+      </tip>
+      <para>Since we have assumed that the router box does not have a CD-ROM drive, to access the Slackware CD's we have to mount the CD to another system, share it (e.g. export it by NFS) and then access it through the network. If there is internet connection, then it is easier to download the packages from the internet, and this is the way that I will describe here. </para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>Download the subversion package from one of the mirrors: 
+      <screen><prompt>bash#</prompt> <command>mkdir download</command>
+<prompt>bash#</prompt> <command>cd download/</command>
+<prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/slackware/d/subversion-1.2.3-i486-1.*</command>
+<prompt>bash#</prompt> <command>ls -l</command>
+total 3184
+-rw-r--r--  1 root root 3251231 Sep  8  2005 subversion-1.2.3-i486-1.tgz
+-rw-r--r--  1 root root     189 Sep  8  2005 subversion-1.2.3-i486-1.tgz.asc
+-rw-r--r--  1 root root     597 Sep  8  2005 subversion-1.2.3-i486-1.txt</screen>
+2. Install the package: 
+      <screen><prompt>bash#</prompt> <command>installpkg subversion-1.2.3-i486-1.tgz</command></screen></para>
+        </listitem>
+      </orderedlist>
+    </section>
+    <section id="packages">
+      <title>Other Packages</title>
+      <para>In a similar way to installing <emphasis>subversion</emphasis> , get from the internet and install some other packages that are required by the neccessary packages and tools (subversion, apache, mysql, php, etc.). Unfortunatly, the package managment system of Slackware does not check dependencies. However, fortunately, it is easy to find out what is missing, in which package it is included, and where to get this package from. </para>
+      <para>For example, running <command>svn checkout</command> , I get this error message: 
+    <screen>svn: error while loading shared libraries: libxml2.so.2: 
+cannot open shared object file: No such file or directory</screen>
+So, the library file <filename>libxml2.so.2</filename> , needed by svn, is missing. Going at <ulink url="http://slackware.it/en/pb/"/> and searching for the file <emphasis>libxml2.so.2</emphasis> in <emphasis>Slackware-10.2</emphasis> , we find out that there are two packages containing it, <emphasis>libxml2-2.6.21-i486-1</emphasis> , and <emphasis>libxml2-2.6.22-i486-1</emphasis> . The last one is a patched one (latest), and this is the one that we should install. Following its link, we find from where we can get it. The rest is the same as for the subversion package. </para>
+      <tip>
+        <para>To get easily the location of the package, place the mouse over the <emphasis>http</emphasis> or <emphasis>ftp</emphasis> link, right click, and choose <emphasis>Copy Link Location</emphasis> (this is in Firefox, other browsers may have similar options). Then go at the terminal (where you are logged in the router), and click the middle button (or click simultaneously the left and the right buttons).</para>
+      </tip>
+      <para>These packages are: <emphasis>libidn</emphasis> , <emphasis>libxml2</emphasis> , <emphasis>glibc-i18n</emphasis> , <emphasis>gettext-tools</emphasis> , <emphasis>mhash</emphasis> , and they can be downloaded and installed like this: 
+    <screen><prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/patches/packages/libxml2-2.6.22-i486-1.*</command>
+<prompt>bash#</prompt> <command>installpkg libxml2-2.6.22-i486-1.tgz</command>
+<prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/slackware/l/glibc-i18n-2.3.5-noarch-5.*</command>
+<prompt>bash#</prompt> <command>installpkg glibc-i18n-2.3.5-noarch-5.tgz</command>
+<prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/slackware/l/libidn-0.5.17-i486-1.*</command>
+<prompt>bash#</prompt> <command>installpkg libidn-0.5.17-i486-1.tgz</command>
+<prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/slackware/l/mhash-0.9.2-i486-1.*</command>
+<prompt>bash#</prompt> <command>installpkg mhash-0.9.2-i486-1.tgz</command>
+<prompt>bash#</prompt> <command>wget ftp://ftp.bit.nl/mirror/slackware/slackware-10.2/slackware/d/gettext-tools-0.14.3-i486-1.*</command>
+<prompt>bash#</prompt> <command>installpkg gettext-tools-0.14.3-i486-1.tgz</command></screen></para>
+    </section>
+    <section id="get-webapp">
+      <title>Get the Web App</title>
+      <para>The web application that manages the connections, clients etc. is retrieved by subversion from a svn repository, which could be in the local network or somewhere in the internet, like this: 
+    <screen><prompt>bash#</prompt> <command>cd /var/www/htdocs/</command>
+<prompt>bash#</prompt> <command>svn checkout svn://ma-isp.com:8080/scarlet/branches/release-2</command>
+<prompt>bash#</prompt> <command>svn checkout svn+ssh://dasho@192.168.1.111/data/svn/scarlet/branches/release-2 scarlet</command></screen></para>
+      <para>This makes easy the update/upgrade of the software. </para>
+    </section>
+    <section id="mysqld">
+      <title>mysqld</title>
+      <para>Installation of MySQL in Slackware-10.2 has some problems. It can be fixed using these commands: 
+    <screen><prompt>root@gateway:~#</prompt> <command>su - mysql</command>
+<prompt>mysql@gateway:~$</prompt> <command>mysql_install_db</command></screen></para>
+      <para>Then start the mysql server and change the password of the root: 
+    <screen><prompt>mysql@gateway:~$</prompt> <command>/etc/rc.d/rc.mysqld start</command>
+<prompt>mysql@gateway:~$</prompt> <command>mysqladmin -u root password 'new-password'</command></screen></para>
+      <para>See also <ulink url="http://www.linuxquestions.org/questions/showthread.php?postid=1581433">Slackware guide for AMP Apache MySQL &amp; PHP</ulink> . </para>
+    </section>
+    <section id="sshd">
+      <title>sshd</title>
+      <para>To improve security, change the port of the <emphasis>ssh</emphasis> service, at <filename>/etc/ssh/sshd_config</filename>: 
+    <programlisting>Port 1234</programlisting></para>
+    </section>
+    <section id="dhcp">
+      <title>DHCP</title>
+      <para/>
+    </section>
+    <section id="net">
+      <title>Network</title>
+      <para/>
+      <section id="network_sh">
+        <title>network.sh</title>
+        <programlisting>#!/bin/bash
+
+/sbin/ip link set dev eth0 up
+/sbin/ip link set dev eth1 up
+
+/sbin/ip address flush dev eth0
+/sbin/ip address flush dev eth1
+
+/sbin/ip address add 192.168.0.1/24 dev eth0
+/sbin/ip address add 192.168.1.10/24 dev eth1
+/sbin/ip address add 192.168.0.98/24 dev eth1
+
+/sbin/ip route del 192.168.0.0/24 dev eth1
+/sbin/ip route add 192.168.0.1 dev eth1
+/sbin/ip route add default via 192.168.0.1 dev eth1</programlisting>
+      </section>
+      <section id="reconfig_sh">
+        <title>reconfig.sh</title>
+        <programlisting>#!/bin/bash
+### change the configuration of the server
+
+path=$(dirname $0)
+
+### network and iptables
+$path/network.sh
+#$path/firewall/iptables.sh
+
+### services</programlisting>
+      </section>
+      <section id="test_sh">
+        <title>test.sh</title>
+        <programlisting>#!/bin/bash
+### This script is for testing any new configurations.
+### When the server is accessed and managed remotely,
+### something may go wrong and it is possible to lock
+### yourself out. To avoid such troubles, this script
+### tests any new configs and after a certain time
+### (e.g. 60 secs) it goes back to the old (tried and true)
+### configuration. During the sleep time you can test
+### the new configuration and make sure that it is OK.
+
+firewall/iptables.sh
+/usr/sbin/iptables-save &gt; output.txt
+sleep 16
+firewall/iptables-stop.sh
+#sleep 10
+#reboot</programlisting>
+      </section>
+    </section>
+    <section id="iptables">
+      <title>Iptables</title>
+      <para/>
+      <section id="iptables_sh">
+        <title>iptables.sh</title>
+        <programlisting>
+          
+#!/bin/bash
+### this script configures the firewall
+
+path=$(dirname $0)
+IPT=/usr/sbin/iptables
+
+### clear all the tables
+$IPT --table filter --flush
+$IPT --table filter --delete-chain
+$IPT --table nat    --flush
+$IPT --table mangle --flush
+
+### accept by default anything in the OUTPUT chain
+$IPT --table filter --policy OUTPUT ACCEPT
+
+### enable SNAT-ing
+$path/source-nat.sh enable eth1 192.168.0.98
+
+### the rules of the INPUT chain
+$path/input-rules.sh
+
+### the rules of the FORWARD chain
+$path/forward-rules.sh
+
+### if there is any argument, display the rules
+if [ $# != 0 ]
+then
+  /usr/sbin/iptables-save
+fi
+
+        </programlisting>
+      </section>
+      <section id="iptables-stop_sh">
+        <title>iptables-stop.sh</title>
+        <programlisting>#!/bin/bash
+### this script configures the firewall
+                                                                                
+path=$(dirname $0)
+IPT=/usr/sbin/iptables
+                                                                                
+### clear all the tables
+$IPT --table filter --flush
+$IPT --table filter --delete-chain
+$IPT --table nat    --flush
+$IPT --table mangle --flush
+                                                                                
+### set default policies to ACCEPT
+$IPT --table filter --policy INPUT ACCEPT
+$IPT --table filter --policy OUTPUT ACCEPT
+$IPT --table filter --policy FORWARD ACCEPT</programlisting>
+      </section>
+      <section id="source-nat_sh">
+        <title>source-nat.sh</title>
+        <programlisting>
+          
+#!/bin/bash
+# enable or disable source NAT (masquerading)
+
+function usage
+{
+  echo "Usage: ${0} [enable|disable|list] [interface] [external_ip]"
+  exit
+}
+
+### check that there is one parameter
+if [ -z $1 ]; then usage; fi
+
+ACTION=$1
+OUT_IF=${2:-eth0}
+EXTERNAL_IP=$3
+
+if [ -z $EXTERNAL_IP ]
+then
+  TARGET=MASQUERADE
+else
+  TARGET="SNAT --to-source $EXTERNAL_IP"
+fi
+
+### enable forwarding in the kernel
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+### append or delete the SNAT rules
+function iptables-snat-rule
+{
+  command=$1
+  IPT=/usr/sbin/iptables
+                                                                                
+  $IPT --table nat --$command POSTROUTING \
+       --out-interface $OUT_IF \
+       --jump $TARGET
+}
+
+### list the existing SNAT rules
+function list-snat-rules
+{
+  /usr/sbin/iptables-save --table nat \
+      | grep -E 'SNAT|MASQUERADE' \
+      | grep --invert-match 'dport'
+}
+
+case $ACTION in
+  enable  )  iptables-snat-rule append ;;
+  disable )  iptables-snat-rule delete ;;
+  *       )  list-snat-rules ;;
+esac
+
+        </programlisting>
+      </section>
+      <section id="input-rules_sh">
+        <title>input-rules.sh</title>
+        <programlisting>#!/bin/bash
+### the rules of the INPUT chain
+
+path=$(dirname $0)
+IPT='/usr/sbin/iptables --table filter'
+APPEND="$IPT --append INPUT"
+
+### drop anything that does not match
+$IPT --policy INPUT DROP
+
+### accept anything from localhost
+$APPEND --in-interface lo --jump ACCEPT
+#$APPEND --in-interface eth1 --jump ACCEPT
+
+### accept any type of icmp
+$APPEND --protocol icmp --jump ACCEPT
+
+### accept already established connections
+$APPEND --match state --state ESTABLISHED,RELATED --jump ACCEPT
+
+### accept port 67 (dhcp) from interface eth0
+$APPEND --in-interface eth0 --proto tcp --destination-port 67 --jump ACCEPT
+$APPEND --in-interface eth0 --proto udp --destination-port 67 --jump ACCEPT
+                                                                                
+### accept ssh (2222) from interface eth1
+$APPEND --in-interface eth1 --proto tcp --destination-port 2222 --jump ACCEPT
+
+### reject anything else
+#$APPEND --jump REJECT --reject-with icmp-host-prohibited
+#
+# This is commented because the default policy will drop them anyway.
+# Also, if it is commented, the script 'port.sh' can be used to
+# accept or deny any other ports (by appending or deleting rules).
+# If it is uncommented, then any other rules that are added later
+# will come after this one, and since this one matches anything, they
+# will not be reached. The order of the rules does matter!</programlisting>
+      </section>
+      <section id="forward-rules_sh">
+        <title>forward-rules.sh</title>
+        <programlisting>#!/bin/bash
+### the rules of the FORWARD chain
+
+path=$(dirname $0)
+IPT='/usr/sbin/iptables --table filter'
+APPEND="$IPT --append FORWARD"
+
+### enable forwarding in the kernel
+echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+
+### the default is to accept everything
+$IPT --policy FORWARD ACCEPT
+
+### accept any type of icmp
+#$APPEND --protocol icmp --jump ACCEPT
+
+### accept already established connections
+#$APPEND --match state --state ESTABLISHED,RELATED --jump ACCEPT
+
+### accept everything in higher ports
+#$APPEND --proto tcp --destination-port 1024: --jump ACCEPT
+#$APPEND --proto udp --destination-port 1024: --jump ACCEPT
+
+### reject anything else
+#$APPEND --jump REJECT --reject-with icmp-host-prohibited
+#
+# This is commented because the default policy will drop them anyway.
+# Also, if it is commented, the script 'port-forward.sh' can be used to
+# enable or dissable any other port forwardings. If it is uncommented,
+# then any other rules that are added later will come after this one,
+# and since this one matches anything, they will not be reached.
+# The order of the rules does matter!</programlisting>
+      </section>
+      <section id="ip-forward_sh">
+        <title>ip-forward.sh</title>
+        <programlisting>#!/bin/bash
+### forward an IP to another server
+
+function usage
+{
+  echo "Usage: $0 EXTERNAL_IP INTERNAL_IP SERVER_IP
+    EXTERNAL_IP  is the IP that will be forwarded
+    INTERNAL_IP  is the IP through which it is forwarded
+    SERVER_IP    is the IP to which it is forwarded"
+  exit
+}
+
+### check that there are at least 4 parameters
+if <ulink url=" $# -lt 3 "/>; then usage; fi
+
+EXTERNAL_IP=$1  # IP that will be forwarded
+INTERNAL_IP=$2  # IP through which it is forwarded
+SERVER_IP=$3    # IP to which it is forwarded
+
+IPT='/usr/sbin/iptables'
+
+### accept for forward everything related with $SERVER_IP
+$IPT --table filter --append FORWARD \
+     --destination $SERVER_IP --jump ACCEPT
+$IPT --table filter --append FORWARD \
+     --source $SERVER_IP --jump ACCEPT
+
+### forward everything with destination $EXTERNAL_IP to $SERVER_IP
+$IPT --table nat --append PREROUTING \
+     --destination $EXTERNAL_IP --jump DNAT --to-destination $SERVER_IP
+
+### in case that $INTERNAL_IP is not gateway for $SERVER_IP
+#$IPT --table nat --append POSTROUTING \
+#     --destination $SERVER<emphasis>IP --jump SNAT --to-source $INTERNAL</emphasis>IP
+
+### everything comming from $SERVER_IP should be
+### sent out to internet with source $EXTERNAL_IP
+$IPT --table nat --append POSTROUTING \
+     --out-interface eth0 --source $SERVER_IP \
+     --jump SNAT --to-source $EXTERNAL_IP</programlisting>
+      </section>
+      <section id="port-forward_sh">
+        <title>port-forward.sh</title>
+        <programlisting>
+          
+#!/bin/bash
+### enables or disables port forwardings
+
+function usage
+{
+  echo "Usage: $0 PORT EXT_IP INT_IP SERVER_IP [enable|disable|status]
+    PORT       is the port that will be forwarded (like 80 or http)
+    EXT_IP     is the external IP of the server
+    INT_IP     is the IP of through which it will be forwarded
+    SERVER_IP  is the IP of the server to which it will be forwarded"
+  exit
+}
+
+### check that there are at least 4 parameters
+if [ $# -lt 4 ]; then usage; fi
+
+PORT=$1
+EXT_IP=$2
+INT_IP=$3
+SERVER_IP=$4
+ACTION=$5
+
+### append or delete the forward rules according to the parameter
+function iptables-fwd-rules
+{
+  command=$1
+  IPT=/usr/sbin/iptables
+
+  # accept the port for forwarding (both tcp and udp)
+  $IPT --table filter --$command FORWARD \
+       --match state --state NEW \
+       --match tcp --protocol tcp --dport $PORT \
+       --jump ACCEPT
+  $IPT --table filter --$command FORWARD \
+       --match tcp --protocol tcp --dport $PORT \
+       --jump ACCEPT
+
+  ### forward the port
+  $IPT --table nat --$command PREROUTING \
+       --protocol tcp --destination $EXT_IP --dport $PORT \
+       --jump DNAT --to-destination $SERVER_IP
+  ### in case that $INT_IP is not gateway for $SERVER_IP
+  ### but it doesn't hurt even if $INT_IP is gateway for it
+  #$IPT --table nat --$command POSTROUTING \
+  #     --protocol tcp --destination $SERVER_IP --dport $PORT \
+  #     --jump SNAT --to-source $INT_IP
+}
+
+case $ACTION in
+  enable  )  iptables-fwd-rules append ;;
+  disable )  iptables-fwd-rules delete ;;
+  *       )  /usr/sbin/iptables-save | grep $SERVER_IP | grep "dport $PORT" ;;
+esac
+
+        </programlisting>
+      </section>
+      <section id="port_sh">
+        <title>port.sh</title>
+        <programlisting>
+          
+#!/bin/bash
+### Accept (or deny, or show status of) tcp connections in the given port
+### by appending or deleting a rule in the given chain.
+
+function usage
+{
+  echo "Usage: $0 [port] [accept|deny|status] [chain]
+    where port is a number (like 80) or a service name (like http)
+    and chain is: INPUT, FORWARD, LOCAL-NETWORK, SAMBA, etc."
+  exit
+}
+
+if [ $# = 0 ]; then usage; fi
+
+PORT=$1
+ACTION=$2
+CHAIN=${3:-INPUT}
+
+## appends or deletes a rule, according to the parameter
+function iptables-rule
+{
+  command=$1
+  IPT=/usr/sbin/iptables
+  $IPT --table filter --$command $CHAIN \
+       --match state --state NEW \
+       --match tcp --protocol tcp --destination-port $PORT \
+       --jump ACCEPT
+  $IPT --table filter --$command $CHAIN \
+       --match udp --protocol udp --destination-port $PORT \
+       --jump ACCEPT
+}
+
+case $ACTION in
+  accept )  iptables-rule append ;;
+  deny   )  iptables-rule delete ;;
+  *      )  /usr/sbin/iptables-save | grep $CHAIN | grep "dport $PORT" ;;
+esac
+
+        </programlisting>
+      </section>
+    </section>
+    <section id="tc">
+      <title>Trafic Control</title>
+      <para/>
+      <section id="trafic-control_sh">
+        <title>trafic-control.sh</title>
+        <programlisting>
+          
+#!/bin/bash
+
+function usage
+{
+  echo "Usage: $0 [on|off]"
+  exit
+}
+
+if [ $# = 0 ]; then usage; fi
+ACTION=$1
+RATE=${2:-220}
+
+## Change 220kbit to your uplink's *actual* speed, minus a few percent.xi
+## If you have a really fast modem, raise 'burst' a bit.
+
+case $ACTION in
+  on )
+    /sbin/tc qdisc add dev eth1 root tbf rate ${RATE}kbit latency 50ms burst 1540
+    ;;
+  off )
+    /sbin/tc qdisc del dev eth1 root tbf rate ${RATE}kbit latency 50ms burst 1540
+    ;;
+  * )
+    usage
+    ;;
+esac
+
+        </programlisting>
+      </section>
+    </section>
+    <section id="isa">
+      <title>ISA Network Interface</title>
+      <para>An old Compaq box has one ISA network card and only one PCI slot. So, to use it as a gateway (having at least 2 network cards), we should be able to configure the ISA network card. The problem with the ISA cards is that they are old and they cannot be configured automatically by Linux. So, we have to tell linux the parameters related to the network card. </para>
+      <para>The ISA network card in my Compaq is a <emphasis>3Com EtherLink III</emphasis> (it can be seen written on it). Looking at <ulink url="http://www.tldp.org/HOWTO/Ethernet-HOWTO-4.html#ss4.1">Supported Network Cards for Linux</ulink> I see that it is supported, and the module for it is <emphasis>3c509</emphasis> . Having a look at <filename>/lib/modules/</filename> I see that this module is already installed, so I have to do nothing about finding and installing it. </para>
+      <para>Now I add in <filename>/etc/modules.conf</filename> the following lines (in order to load the module) and then reboot. 
+    <programlisting>alias eth0 3c509
+options 3c509 irq=9 io=0x0210</programlisting></para>
+      <para>How to know which are the right values that can be used for the options? First run the command <command>/sbin/pnpdump</command> . It will show the values of the options that can be accepted by this ISA network card. Then check as well the values is <filename>/proc/interrupts</filename> , <filename>/proc/irq/</filename> , <filename>/proc/iomem</filename> , <filename>/proc/ioports</filename> , etc. to make sure that the values that are used for the options of this card are not used by some other device. </para>
+      <note>
+        <para>The command <command>/sbin/pnpdump</command> is available if the package <emphasis>isapnptools</emphasis> is installed.</para>
+      </note>
+      <para>References: </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <ulink url="http://www.linuxquestions.org/questions/showthread.php?t=162400">Setup ISA Network Cards</ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html\_single/Ethernet-HOWTO.html#ss2.1">How do I tell Linux what driver to use?</ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.linuxdocs.org/HOWTOs/Hardware-HOWTO/nic.html">Supported Network Cards for Linux</ulink>
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <ulink url="http://www.ibiblio.org/pub/Linux/docs/HOWTO/other-formats/html\_single/Ethernet-HOWTO.html#ss2.4">Using More than one Ethernet Card per Machine</ulink>
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+  <section id="wui">
+    <title>Web User Interface</title>
+    <para/>
+    <section id="wui-client">
+      <title>Clients</title>
+      <para>If the clients have ho access to the Internet, they get a red screen saying "Connect My Computer..." for any page on the web that they try to open. Here they can see some contact info about the service provider (telephone, e-mail, address, etc.). Here they are also prompted for a username and password, which are required in order to get internet access. The username and password can be obtained by contacting the ISP. </para>
+      <para>Giving a valid username and password, the client gets internet access, and another red page is displayed to him, with the details of the connection, including the expiration time, the number of connections used, the bandwidth, etc. (also some information about the client, such as the name, username, IP of the computer, MAC address, etc.). The gateway registers the MAC of this computer and allows network access to this MAC, untill the time limit is expired. If the username or password are wrong, or if the expiration time is in the past, or if the maximum number of connections has been reached, then the registration fails. </para>
+      <para>From the time of registration untill the time of expiration, the client (the registered computer) can use the internet normally. In case that the client would like to check the details of his connection, then he can open the page <ulink url="http://gateway.localnet.net/"/> and use his username and password, in order to access the details' page. </para>
+      <para>By clicking the "i" (info) button, the client can see more information about the ISP, about the usage, about the agreement between him and the ISP etc. </para>
+    </section>
+    <section id="wui-admin">
+      <title>Administrator(s)</title>
+      <para>The administrator(s) of the router/gateway can access and manage it through a web interface, using <ulink url="edit.php"/> . It can be accessed using the WAN IP or the LAN IP, like <ulink url="http://192.168.1.243/edit.php"/> or <ulink url="http://192.168.9.1/edit.php"/> , or even using <ulink url="http://gateway.localnet.net/edit.php"/> if the computer of the admin is located in the LAN (behind the gateway). </para>
+      <para>When somebody tries to access the admin interface, it is prompted for a username and password. These are provided to the admin by the superuser of the router (see <xref linkend="wui-su-users"/> ). After logging in successfully, the admin will have access to several interfaces (tabs). These interfaces are: </para>
+      <itemizedlist>
+        <listitem>
+          <para>Clients -- used to manage the clients that get network access through the gateway. </para>
+        </listitem>
+        <listitem>
+          <para>Settings -- used to modify the settings/options of the gateway itself. </para>
+        </listitem>
+        <listitem>
+          <para>Misc -- several administrative tasks like backup/restore, update/upgrade, etc. </para>
+        </listitem>
+        <listitem>
+          <para>Logs -- records of several important events in the system, like adding a client, changing settings, etc. </para>
+        </listitem>
+      </itemizedlist>
+      <para>They are discussed in more details in the following sections. </para>
+      <section id="wuii-admin-clients">
+        <title>Clients</title>
+        <para>This interface contains a list of clients that usually get internet access through this gateway/router (at a certain time they may have or may not have internet access). </para>
+        <para>If the list is long, the filters above the list can be used to search for a certain client. The list can be filtered by username, realname, phone or e-mail. Also, if the list (or the result of filtering) is longer than 10 items, it is displayed in pages of 10. </para>
+        <para>The admin can delete any client of the list or he can add new clients (using the button <emphasis>Add New Client</emphasis> below the list). At any time, a certain client can be selected from the list, and its details are displayed in the main part of the interface (on the right). The details of the client include: </para>
+        <itemizedlist>
+          <listitem>
+            <para>General info and contacts, like username, firstname, lastname, e-mail, phone, address, notes, etc. From these fields, only the username is needed by the system; the others are just for the benefit of the admin. The username is used when the clients register their computers (giving a username and password). </para>
+          </listitem>
+          <listitem>
+            <para>Information about the internet connection: the expiration time, the maximum number of connections, and the access code. 
+      <itemizedlist><listitem><para>The <emphasis>access code</emphasis> is just the password that is used by the clients to register their computers. </para></listitem><listitem><para>The <emphasis>maximum number of connections</emphasis> is the maximum number of computers that the client can connect to internet (register) using this username and password. </para></listitem><listitem><para>The <emphasis>expiration time</emphasis> is the time limit until when the internet connection is allowed. It is checked by the system each hour, and if it is expired, the internet connection for the client is interrupted. The admin can change it at any time. If it is set in the past, then the connection of the client will be interrupted after at most one hour. 
+          <note><para>After the connection for a client is interrupted, the client needs to register its computers again (with a username and password), in order to get connected again. So, it is advisable that they pay for the next term before the current expiration time.</para></note></para></listitem></itemizedlist></para>
+          </listitem>
+          <listitem>
+            <para>The list of the client computers having internet access, whith the computer name, MAC address, and the registration time, for each computer. This list is filled automatically when each client computer is registered. But the admin can also add an item manually, change the name of an existing computer, or delete a computer from the list. 
+      <tip><para>This can be usefull for example when a client wants to change one of his computers that is connected to internet. He cannot register another computer because the maximum number of connections is already reached, and he cannot remove one of the already registered computers because there is no interface for doing this. In this case he can contact the admin and ask him to disconnect (remove from the list) a computer with a certain name. After that he would have a free (unused) connection and he can connect to internet (register) another computer.</para></tip></para>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section id="wui-admin-settings">
+        <title>Settings</title>
+        <para>This interface is used to change/modify the settings of the gateway/router. It is almost self evident what each configuration parameter is used for, and there is also a comment that explains it. In general, the configuration parameters are these: </para>
+        <itemizedlist>
+          <listitem>
+            <para>Parameters that are used for connecting the gateway to the Internet: WAN IP (IP of the interface connected to the WAN (eth0)), GATEWAY, and DNS. </para>
+          </listitem>
+          <listitem>
+            <para>IP of the interface connected to the LAN, (which is used as gateway by the LAN computers). </para>
+          </listitem>
+          <listitem>
+            <para>Upload and download rate limits (in Kbits/s): UPLOAD_LIMIT, DOWNLOAD_LIMIT. 
+      <warning><para>The numbers that are assigned to the parameters are not the exact limit rates that are set on the LAN, so test the rates and use the trial-and-error method to find the right values. They can be tested using services like: <ulink url="http://www.testmy.net/"/> .</para></warning></para>
+          </listitem>
+        </itemizedlist>
+        <para>There are two sets of values for the configuration parameters: one that is saved in the database and one that is set in the configuration files of the gateway. The values of the database are displayed in the textboxes and can be modified and saved at any time, without disturbing the current configuration of the router. The values that are currently used by the router (in the config files) are displayed next to the textboxes (on the right). </para>
+        <para>In order to change the settings of the router, they should be first modified and saved in the database, and then they should be applied (by clicking the button <emphasis>Apply</emphasis> ). The <emphasis>Apply</emphasis> button sets the values of the database in the configuration files and then reconfigures the router using the new settings. </para>
+        <para>If you are not sure that the new settings are OK you should test them before applying them. This can be done using the button <emphasis>Test</emphasis> . It will ask for the test time (in seconds), will apply the new settings, will wait for the specified time, and then will revert the configuration back to the old settings. During the time that the new settings are active (before they are reverted back), you can check and make sure that everything works well. Because the new settings can make the gateway unstable or unreachable (if they are wrong), it is always a good idea to test them first, even if you are sure that they are OK. </para>
+        <note>
+          <para>For some reason (maybe there is any bug), the settings of the upload/download rate limits are saved to config files but are not applied, when the button <emphasis>Apply</emphasis> is clicked. The router has to be rebooted so that these new settings are applied. The server can be rebooted from the Misc interface (see <xref linkend="wui-admin-misc"/> ).</para>
+        </note>
+        <para>In this interface there are also these buttons: </para>
+        <itemizedlist>
+          <listitem>
+            <para><emphasis>Refresh</emphasis> -- refreshes the page. It is different from the Refresh button of the browser because the button of the browser also repeats the last action, which can be e.g. Save or Apply, and which usually is udesirable. </para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Get Current Values</emphasis> -- gets the current values of the settings from the configuration files of the router and saves them in the DB. </para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Get Default Values</emphasis> -- saves in database some default values for each setting (but does not apply them!). </para>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section id="wui-admin-misc">
+        <title>Misc</title>
+        <para>This interface is a collection of miscellaneous administrative tasks, which usually need to be performed by the admin of the router/gateway. These tasks are: </para>
+        <itemizedlist>
+          <listitem>
+            <para><emphasis>Backup/Restore of the Data</emphasis> : used to backup/restore the content of the database, which contains the clients, users, settings, logs, etc. To make a backup, click the button <emphasis>Make a New Backup of the Database</emphasis> . It will create a backup file which is compressed (by <command>gzip</command> ) and contains the todays date in its name. This file will be listed in the list of backup files, where it can be downloaded (in firefox for example, it can be done by right click and <emphasis>Save Link As...</emphasis> ). 
+      <note><para>Because the name of the file contains the date, if you make a backup file in different days, a different file will be stored in the list for each day. However, if you make several backups the same day, the last one will overwrite the previous one.</para></note>
+When a backup file needs to be restored, then it should be uploaded in the list first (if necessary), and then click the <emphasis>Restore</emphasis> button next to it (on the right). A backup file can also be removed from the list by clicking the <emphasis>X</emphasis> (delete) button.     </para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Adjust the System Time</emphasis> : used to modify the time of the server. Because the time of the system is used to check the expiration time of the clients, it should be almost accurate. In case that it is not, then it can be adjusted here. The string above the textbox displays the current time (the time of the server at the moment of page generation; use the button <emphasis>Refresh This Page</emphasis> to refresh it). To modify the time, write the new date and time in the textbox and click <emphasis>Set Time</emphasis> . The value that is written in the textbox can be a partial time as well, like this: 15:35 . In this example, just the time and minutes will be changed and the rest will be the same as before. </para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Update the Software</emphasis> : will get from the maintenance server the latest modifications of the software, mostly any bug fixes. </para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Upgrade the Software</emphasis> : will upgrade the software to another release, which is retrived from the maintenance server through the internet. You will be asked for the name of the new release. 
+      <tip><para>If something is not working after upgrading to the new release, try to upgrade to the previous release (downgrade) and report the problem.</para></tip></para>
+          </listitem>
+          <listitem>
+            <para><emphasis>Reboot the Server</emphasis> : it may be needed some times. </para>
+          </listitem>
+        </itemizedlist>
+      </section>
+      <section id="wui-admin-logs">
+        <title>Logs</title>
+        <para>This interface displayes a list of records of important events of the system. Initially only the latest events are displayed (since yesterday at the same time as now). The time range can be changed using the fields <emphasis>From</emphasis> and <emphasis>To</emphasis> in the filter above the list. The events can also be filtered by the event name and by matching a part from the details. If the list of the events is long, it is displayed by pages, which are navigated using the links/buttons at the footer of the list. </para>
+        <para>The events that are recorded by the system are: server bootup, user login, client add/remove/modify, MAC add/remove, modification of the settings, etc. For each event the system records also some details about it, like the source of the event (system, admin, etc.), the username of the admin, the affected things, etc. </para>
+        <para>A printer friendly page of the list can be generated by clicking the <emphasis>Print List</emphasis> button (at the footer of the list). A list of the logs can also be sent periodically by email to the admin, if wanted, e.g. each week or month. </para>
+      </section>
+    </section>
+    <section id="wui-su">
+      <title>Superuser</title>
+      <para>The <emphasis>superuser</emphasis> is a special user that always exists (cannot be added or deleted) and which has unlimitted access to all the parts (interfaces) of the application. He has access to all the interfaces that a usual admin can use, and besides these there are also some interfaces that can be used only by him. </para>
+      <section id="wui-su-users">
+        <title>Users</title>
+        <para/>
+      </section>
+      <section id="wui-su-su">
+        <title>SU</title>
+        <para/>
+      </section>
+    </section>
+  </section>
+  <section id="appendix">
+    <title>Appendix</title>
+    <section id="GNU-FDL">
+      <title>GNU Free Documentation License</title>
+      <para>FDL, GNU Free Documentation LicenseVersion 1.2, November 2002
+<screen>Copyright (C) 2000,2001,2002 Free Software Foundation, Inc.
+59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
+
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+</screen></para>
+      <orderedlist numeration="arabic">
+        <listitem>
+          <para>
+PREAMBLE
+</para>
+          <para>
+The purpose of this License is to make a manual, textbook, or other
+functional and useful document free in the sense of freedom: to
+assure everyone the effective freedom to copy and redistribute it,
+with or without modifying it, either commercially or noncommercially.
+Secondarily, this License preserves for the author and publisher a way
+to get credit for their work, while not being considered responsible
+for modifications made by others.
+</para>
+          <para>
+This License is a kind of "copyleft", which means that derivative
+works of the document must themselves be free in the same sense.  It
+complements the GNU General Public License, which is a copyleft
+license designed for free software.
+</para>
+          <para>
+We have designed this License in order to use it for manuals for free
+software, because free software needs free documentation: a free
+program should come with manuals providing the same freedoms that the
+software does.  But this License is not limited to software manuals;
+it can be used for any textual work, regardless of subject matter or
+whether it is published as a printed book.  We recommend this License
+principally for works whose purpose is instruction or reference.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+APPLICABILITY AND DEFINITIONS
+</para>
+          <para>
+This License applies to any manual or other work, in any medium, that
+contains a notice placed by the copyright holder saying it can be
+distributed under the terms of this License.  Such a notice grants a
+world-wide, royalty-free license, unlimited in duration, to use that
+work under the conditions stated herein.  The "Document", below,
+refers to any such manual or work.  Any member of the public is a
+licensee, and is addressed as "you".  You accept the license if you
+copy, modify or distribute the work in a way requiring permission
+under copyright law.
+</para>
+          <para>
+A "Modified Version" of the Document means any work containing the
+Document or a portion of it, either copied verbatim, or with
+modifications and/or translated into another language.
+</para>
+          <para>
+A "Secondary Section" is a named appendix or a front-matter section
+of the Document that deals exclusively with the relationship of the
+publishers or authors of the Document to the Document's overall
+subject (or to related matters) and contains nothing that could fall
+directly within that overall subject.  (Thus, if the Document is in
+part a textbook of mathematics, a Secondary Section may not explain
+any mathematics.)  The relationship could be a matter of historical
+connection with the subject or with related matters, or of legal,
+commercial, philosophical, ethical or political position regarding
+them.
+</para>
+          <para>
+The "Invariant Sections" are certain Secondary Sections whose titles
+are designated, as being those of Invariant Sections, in the notice
+that says that the Document is released under this License.  If a
+section does not fit the above definition of Secondary then it is not
+allowed to be designated as Invariant.  The Document may contain zero
+Invariant Sections.  If the Document does not identify any Invariant
+Sections then there are none.
+</para>
+          <para>
+The "Cover Texts" are certain short passages of text that are listed,
+as Front-Cover Texts or Back-Cover Texts, in the notice that says that
+the Document is released under this License.  A Front-Cover Text may
+be at most 5 words, and a Back-Cover Text may be at most 25 words.
+</para>
+          <para>
+A "Transparent" copy of the Document means a machine-readable copy,
+represented in a format whose specification is available to the
+general public, that is suitable for revising the document
+straightforwardly with generic text editors or (for images composed of
+pixels) generic paint programs or (for drawings) some widely available
+drawing editor, and that is suitable for input to text formatters or
+for automatic translation to a variety of formats suitable for input
+to text formatters.  A copy made in an otherwise Transparent file
+format whose markup, or absence of markup, has been arranged to thwart
+or discourage subsequent modification by readers is not Transparent.
+An image format is not Transparent if used for any substantial amount
+of text.  A copy that is not "Transparent" is called "Opaque".
+</para>
+          <para>
+Examples of suitable formats for Transparent copies include plain
+ascii without markup, Texinfo input format, LaTeX input
+format, SGML or XML using a publicly available
+DTD, and standard-conforming simple HTML,
+PostScript or PDF designed for human modification.  Examples
+of transparent image formats include PNG, XCF and
+JPG.  Opaque formats include proprietary formats that can be
+read and edited only by proprietary word processors, SGML or
+XML for which the DTD and/or processing tools are
+not generally available, and the machine-generated HTML,
+PostScript or PDF produced by some word processors for
+output purposes only.
+</para>
+          <para>
+The "Title Page" means, for a printed book, the title page itself,
+plus such following pages as are needed to hold, legibly, the material
+this License requires to appear in the title page.  For works in
+formats which do not have any title page as such, "Title Page" means
+the text near the most prominent appearance of the work's title,
+preceding the beginning of the body of the text.
+</para>
+          <para>
+A section "Entitled XYZ" means a named subunit of the Document whose
+title either is precisely XYZ or contains XYZ in parentheses following
+text that translates XYZ in another language.  (Here XYZ stands for a
+specific section name mentioned below, such as "Acknowledgements",
+"Dedications", "Endorsements", or "History".)  To "Preserve the Title"
+of such a section when you modify the Document means that it remains a
+section "Entitled XYZ" according to this definition.
+</para>
+          <para>
+The Document may include Warranty Disclaimers next to the notice which
+states that this License applies to the Document.  These Warranty
+Disclaimers are considered to be included by reference in this
+License, but only as regards disclaiming warranties: any other
+implication that these Warranty Disclaimers may have is void and has
+no effect on the meaning of this License.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+VERBATIM COPYING
+</para>
+          <para>
+You may copy and distribute the Document in any medium, either
+commercially or noncommercially, provided that this License, the
+copyright notices, and the license notice saying this License applies
+to the Document are reproduced in all copies, and that you add no other
+conditions whatsoever to those of this License.  You may not use
+technical measures to obstruct or control the reading or further
+copying of the copies you make or distribute.  However, you may accept
+compensation in exchange for copies.  If you distribute a large enough
+number of copies you must also follow the conditions in section 3.
+</para>
+          <para>
+You may also lend copies, under the same conditions stated above, and
+you may publicly display copies.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+COPYING IN QUANTITY
+</para>
+          <para>
+If you publish printed copies (or copies in media that commonly have
+printed covers) of the Document, numbering more than 100, and the
+Document's license notice requires Cover Texts, you must enclose the
+copies in covers that carry, clearly and legibly, all these Cover
+Texts: Front-Cover Texts on the front cover, and Back-Cover Texts on
+the back cover.  Both covers must also clearly and legibly identify
+you as the publisher of these copies.  The front cover must present
+the full title with all words of the title equally prominent and
+visible.  You may add other material on the covers in addition.
+Copying with changes limited to the covers, as long as they preserve
+the title of the Document and satisfy these conditions, can be treated
+as verbatim copying in other respects.
+</para>
+          <para>
+If the required texts for either cover are too voluminous to fit
+legibly, you should put the first ones listed (as many as fit
+reasonably) on the actual cover, and continue the rest onto adjacent
+pages.
+</para>
+          <para>
+If you publish or distribute Opaque copies of the Document numbering
+more than 100, you must either include a machine-readable Transparent
+copy along with each Opaque copy, or state in or with each Opaque copy
+a computer-network location from which the general network-using
+public has access to download using public-standard network protocols
+a complete Transparent copy of the Document, free of added material.
+If you use the latter option, you must take reasonably prudent steps,
+when you begin distribution of Opaque copies in quantity, to ensure
+that this Transparent copy will remain thus accessible at the stated
+location until at least one year after the last time you distribute an
+Opaque copy (directly or through your agents or retailers) of that
+edition to the public.
+</para>
+          <para>
+It is requested, but not required, that you contact the authors of the
+Document well before redistributing any large number of copies, to give
+them a chance to provide you with an updated version of the Document.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+MODIFICATIONS
+</para>
+          <para>
+You may copy and distribute a Modified Version of the Document under
+the conditions of sections 2 and 3 above, provided that you release
+the Modified Version under precisely this License, with the Modified
+Version filling the role of the Document, thus licensing distribution
+and modification of the Modified Version to whoever possesses a copy
+of it.  In addition, you must do these things in the Modified Version:
+</para>
+          <orderedlist numeration="upperalpha">
+            <listitem>
+              <para>
+Use in the Title Page (and on the covers, if any) a title distinct
+from that of the Document, and from those of previous versions
+(which should, if there were any, be listed in the History section
+of the Document).  You may use the same title as a previous version
+if the original publisher of that version gives permission.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+List on the Title Page, as authors, one or more persons or entities
+responsible for authorship of the modifications in the Modified
+Version, together with at least five of the principal authors of the
+Document (all of its principal authors, if it has fewer than five),
+unless they release you from this requirement.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+State on the Title page the name of the publisher of the
+Modified Version, as the publisher.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve all the copyright notices of the Document.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Add an appropriate copyright notice for your modifications
+adjacent to the other copyright notices.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Include, immediately after the copyright notices, a license notice
+giving the public permission to use the Modified Version under the
+terms of this License, in the form shown in the Addendum below.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve in that license notice the full lists of Invariant Sections
+and required Cover Texts given in the Document's license notice.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Include an unaltered copy of this License.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve the section Entitled "History", Preserve its Title, and add
+to it an item stating at least the title, year, new authors, and
+publisher of the Modified Version as given on the Title Page.  If
+there is no section Entitled "History" in the Document, create one
+stating the title, year, authors, and publisher of the Document as
+given on its Title Page, then add an item describing the Modified
+Version as stated in the previous sentence.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve the network location, if any, given in the Document for
+public access to a Transparent copy of the Document, and likewise
+the network locations given in the Document for previous versions
+it was based on.  These may be placed in the "History" section.
+You may omit a network location for a work that was published at
+least four years before the Document itself, or if the original
+publisher of the version it refers to gives permission.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+For any section Entitled "Acknowledgements" or "Dedications", Preserve
+the Title of the section, and preserve in the section all the
+substance and tone of each of the contributor acknowledgements and/or
+dedications given therein.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve all the Invariant Sections of the Document,
+unaltered in their text and in their titles.  Section numbers
+or the equivalent are not considered part of the section titles.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Delete any section Entitled "Endorsements".  Such a section
+may not be included in the Modified Version.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Do not retitle any existing section to be Entitled "Endorsements" or
+to conflict in title with any Invariant Section.
+  </para>
+            </listitem>
+            <listitem>
+              <para>
+Preserve any Warranty Disclaimers.
+  </para>
+            </listitem>
+          </orderedlist>
+          <para>
+If the Modified Version includes new front-matter sections or
+appendices that qualify as Secondary Sections and contain no material
+copied from the Document, you may at your option designate some or all
+of these sections as invariant.  To do this, add their titles to the
+list of Invariant Sections in the Modified Version's license notice.
+These titles must be distinct from any other section titles.
+</para>
+          <para>
+You may add a section Entitled "Endorsements", provided it contains
+nothing but endorsements of your Modified Version by various
+parties--for example, statements of peer review or that the text has
+been approved by an organization as the authoritative definition of a
+standard.
+</para>
+          <para>
+You may add a passage of up to five words as a Front-Cover Text, and a
+passage of up to 25 words as a Back-Cover Text, to the end of the list
+of Cover Texts in the Modified Version.  Only one passage of
+Front-Cover Text and one of Back-Cover Text may be added by (or
+through arrangements made by) any one entity.  If the Document already
+includes a cover text for the same cover, previously added by you or
+by arrangement made by the same entity you are acting on behalf of,
+you may not add another; but you may replace the old one, on explicit
+permission from the previous publisher that added the old one.
+</para>
+          <para>
+The author(s) and publisher(s) of the Document do not by this License
+give permission to use their names for publicity for or to assert or
+imply endorsement of any Modified Version.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+COMBINING DOCUMENTS
+</para>
+          <para>
+You may combine the Document with other documents released under this
+License, under the terms defined in section 4 above for modified
+versions, provided that you include in the combination all of the
+Invariant Sections of all of the original documents, unmodified, and
+list them all as Invariant Sections of your combined work in its
+license notice, and that you preserve all their Warranty Disclaimers.
+</para>
+          <para>
+The combined work need only contain one copy of this License, and
+multiple identical Invariant Sections may be replaced with a single
+copy.  If there are multiple Invariant Sections with the same name but
+different contents, make the title of each such section unique by
+adding at the end of it, in parentheses, the name of the original
+author or publisher of that section if known, or else a unique number.
+Make the same adjustment to the section titles in the list of
+Invariant Sections in the license notice of the combined work.
+</para>
+          <para>
+In the combination, you must combine any sections Entitled "History"
+in the various original documents, forming one section Entitled
+"History"; likewise combine any sections Entitled "Acknowledgements",
+and any sections Entitled "Dedications".  You must delete all
+sections Entitled "Endorsements."
+</para>
+        </listitem>
+        <listitem>
+          <para>
+COLLECTIONS OF DOCUMENTS
+</para>
+          <para>
+You may make a collection consisting of the Document and other documents
+released under this License, and replace the individual copies of this
+License in the various documents with a single copy that is included in
+the collection, provided that you follow the rules of this License for
+verbatim copying of each of the documents in all other respects.
+</para>
+          <para>
+You may extract a single document from such a collection, and distribute
+it individually under this License, provided you insert a copy of this
+License into the extracted document, and follow this License in all
+other respects regarding verbatim copying of that document.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+AGGREGATION WITH INDEPENDENT WORKS
+</para>
+          <para>
+A compilation of the Document or its derivatives with other separate
+and independent documents or works, in or on a volume of a storage or
+distribution medium, is called an "aggregate" if the copyright
+resulting from the compilation is not used to limit the legal rights
+of the compilation's users beyond what the individual works permit.
+When the Document is included in an aggregate, this License does not
+apply to the other works in the aggregate which are not themselves
+derivative works of the Document.
+</para>
+          <para>
+If the Cover Text requirement of section 3 is applicable to these
+copies of the Document, then if the Document is less than one half of
+the entire aggregate, the Document's Cover Texts may be placed on
+covers that bracket the Document within the aggregate, or the
+electronic equivalent of covers if the Document is in electronic form.
+Otherwise they must appear on printed covers that bracket the whole
+aggregate.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+TRANSLATION
+</para>
+          <para>
+Translation is considered a kind of modification, so you may
+distribute translations of the Document under the terms of section 4.
+Replacing Invariant Sections with translations requires special
+permission from their copyright holders, but you may include
+translations of some or all Invariant Sections in addition to the
+original versions of these Invariant Sections.  You may include a
+translation of this License, and all the license notices in the
+Document, and any Warranty Disclaimers, provided that you also include
+the original English version of this License and the original versions
+of those notices and disclaimers.  In case of a disagreement between
+the translation and the original version of this License or a notice
+or disclaimer, the original version will prevail.
+</para>
+          <para>
+If a section in the Document is Entitled "Acknowledgements",
+"Dedications", or "History", the requirement (section 4) to Preserve
+its Title (section 1) will typically require changing the actual
+title.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+TERMINATION
+</para>
+          <para>
+You may not copy, modify, sublicense, or distribute the Document except
+as expressly provided for under this License.  Any other attempt to
+copy, modify, sublicense or distribute the Document is void, and will
+automatically terminate your rights under this License.  However,
+parties who have received copies, or rights, from you under this
+License will not have their licenses terminated so long as such
+parties remain in full compliance.
+</para>
+        </listitem>
+        <listitem>
+          <para>
+FUTURE REVISIONS OF THIS LICENSE
+</para>
+          <para>
+The Free Software Foundation may publish new, revised versions
+of the GNU Free Documentation License from time to time.  Such new
+versions will be similar in spirit to the present version, but may
+differ in detail to address new problems or concerns.  See
+http://www.gnu.org/copyleft/.
+</para>
+          <para>
+Each version of the License is given a distinguishing version number.
+If the Document specifies that a particular numbered version of this
+License "or any later version" applies to it, you have the option of
+following the terms and conditions either of that specified version or
+of any later version that has been published (not as a draft) by the
+Free Software Foundation.  If the Document does not specify a version
+number of this License, you may choose any version ever published (not
+as a draft) by the Free Software Foundation.
+</para>
+        </listitem>
+      </orderedlist>
+      <section id="addendum">
+        <title>ADDENDUM: How to use this License for your documents
+</title>
+        <para>
+To use this License in a document you have written, include a copy of
+the License in the document and put the following copyright and
+license notices just after the title page:
+</para>
+        <para>
+          <screen>
+Copyright (C)  year  your name.
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+Texts.  A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+ </screen>
+        </para>
+        <para>
+If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
+replace the "with...Texts." line with this:
+</para>
+        <para>
+          <screen>
+with the Invariant Sections being list their titles, with
+the Front-Cover Texts being list, and with the Back-Cover Texts
+being list.
+ </screen>
+        </para>
+        <para>
+If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
+</para>
+        <para>
+If your document contains nontrivial examples of program code, we
+recommend releasing these examples in parallel under your choice of
+free software license, such as the GNU General Public License,
+to permit their use in free software.
+</para>
+      </section>
+    </section>
+  </section>
+</article>
