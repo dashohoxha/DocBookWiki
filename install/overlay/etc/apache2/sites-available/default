@@ -1,6 +1,6 @@
 <VirtualHost *:80>
         ServerName doc.example.org
-	ServerAdmin info@doc.example.org
+	ServerAdmin info@example.org
 
 	DocumentRoot /var/www/docbookwiki
 	<Directory />
