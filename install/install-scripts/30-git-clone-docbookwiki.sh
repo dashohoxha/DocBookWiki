@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -x
 ### Replace the profile docbookwiki with a version
 ### that is cloned from github, so that any updates
 ### can be retrieved easily (without having to
@@ -12,7 +12,6 @@ git clone https://github.com/dashohoxha/DocBookWiki docbookwiki
 ### copy contrib libraries and modules
 cp -a docbookwiki-bak/libraries/ docbookwiki/
 cp -a docbookwiki-bak/modules/contrib/ docbookwiki/modules/
-cp -a docbookwiki-bak/modules/libraries/ docbookwiki/modules/
 cp -a docbookwiki-bak/themes/contrib/ docbookwiki/themes/
 
 ### cleanup
