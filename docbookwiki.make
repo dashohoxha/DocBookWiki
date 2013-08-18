@@ -9,7 +9,7 @@ defaults[libraries][type] = "library"
 ; Additional Themes
 ;--------------------
 
-projects[bootstrap][version] = "2.0"
+projects[bootstrap][version] = "2.1"
 projects[bartik_fb][version] = "1.x-dev"
 
 ;--------------------
@@ -31,7 +31,7 @@ projects[captcha][version] = "1.0"
 projects[recaptcha][version] = "1.9"
 projects[honeypot][version] = "1.14"
 projects[features_extra][version] = "1.0-beta1"
-projects[uuid][version] = "1.0-alpha4"
+projects[uuid][version] = "1.0-alpha5"
 projects[node_export][version] = "3.0"
 projects[configuration][version] = "2.0-alpha2"
 projects[xautoload][version] = "2.7"
@@ -80,7 +80,7 @@ libraries[phpmailer][download][url] = "https://github.com/PHPMailer/PHPMailer/ar
 
 libraries[bootstrap][directory_name] = "bootstrap"
 libraries[bootstrap][download][type] = "get"
-libraries[bootstrap][download][url] = "http://twitter.github.io/bootstrap/assets/bootstrap.zip"
+libraries[bootstrap][download][url] = "https://github.com/twbs/bootstrap/archive/3.0.0-wip.zip"
 
 libraries[facebook-php-sdk][directory_name] = "facebook-php-sdk"
 libraries[facebook-php-sdk][download][type] = "git"

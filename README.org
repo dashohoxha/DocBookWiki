@@ -1,4 +1,38 @@
 
+* Installation
+
+  The recommended way of installation is to build a new server from
+  scratch, inside a chroot environment.
+
+  + Get a copy of the project from GitHub:
+    #+BEGIN_EXAMPLE
+    mkdir /var/chroot
+    cd /var/chroot/
+    git clone https://github.com/dashohoxha/DocBookWiki.git
+    #+END_EXAMPLE
+
+  + Install DocBookWiki inside a chroot system:
+    #+BEGIN_EXAMPLE
+    nohup nice DocBookWiki/install/install.sh dbw &
+    tail -f nohup.out
+    #+END_EXAMPLE
+
+  + Configure it: =chroot dbw/ /tmp/install/config.sh=
+
+  + It is advisable to reboot the host after the installation: =reboot=
+
+  + Start services: =service chroot-dbw start=
+
+  + If this is a local copy (installed on a local machine), then add
+    the domain name =doc.example.org= on ~/etc/hosts~:
+    #+BEGIN_EXAMPLE
+    127.0.0.1       doc.example.org  localhost
+    #+END_EXAMPLE
+    This way it can be accessed by typing =https://doc.example.org= on
+    the browser location (not =https://127.0.0.1= or
+    =https://localhost=).
+
+
 * About DocBookWiki
 
   The goal of DocBookWiki is to help creating and editing simple

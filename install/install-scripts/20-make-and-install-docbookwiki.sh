@@ -42,6 +42,9 @@ drush site-install --verbose --yes docbookwiki \
       --site-name="$site_name" --site-mail="$site_mail" \
       --account-name="$account_name" --account-pass="$account_pass" --account-mail="$account_mail"
 
+### import test books
+profiles/docbookwiki/test/import-docs.sh
+
 ### create the downloads and exports dirs
 mkdir -p /var/www/downloads/
 chown www-data /var/www/downloads/

@@ -1,0 +1,571 @@
+# #-#-#-#-#  general.pot (PROJECT VERSION)  #-#-#-#-#
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  docbookwiki.install: n/a
+#  docbookwiki.info: n/a
+#  modules/dbwiki/dbwiki.module: n/a
+#  modules/dbwiki/dbwiki.info: n/a
+#  modules/docbook/docbook.info: n/a
+#  docbookwiki.profile: n/a
+#  modules/docbook/docbook.module: n/a
+#  modules/docbook/docbook.install: n/a
+#  modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc: n/a
+#  modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc: n/a
+#  themes/bootstrap1/bootstrap1.info: n/a
+#  modules/features/docbookwiki_docbook/docbookwiki_docbook.info: n/a
+#
+# #-#-#-#-#  installer.pot (PROJECT VERSION)  #-#-#-#-#
+# $Id$
+#
+# LANGUAGE translation of Drupal (installer)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: docbookwiki.profile: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2013-08-17 17:02+0000\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: docbookwiki.install:55
+msgid "Send e-mail to admin when a new user is registered"
+msgstr ""
+
+#: docbookwiki.install:65
+msgid "Send e-mail to admin when user modifies his account"
+msgstr ""
+
+#: docbookwiki.info:0 modules/dbwiki/dbwiki.module:23;150
+#: modules/dbwiki/dbwiki.info:0 modules/docbook/docbook.info:0
+msgid "DocBookWiki"
+msgstr ""
+
+#: docbookwiki.info:0
+msgid "Drupal installation profile for DocBookWiki."
+msgstr ""
+
+#: docbookwiki.profile:53
+msgid "DocBookWiki configuration options"
+msgstr ""
+
+#: docbookwiki.profile:67
+msgid "Use PHPMailer to send e-mails"
+msgstr ""
+
+#: docbookwiki.profile:69
+msgid "When enabled, PHPMailer will be used to deliver all site e-mails."
+msgstr ""
+
+#: docbookwiki.profile:76
+msgid ""
+"MimeMail has been detected. To enable PHPMailer for mail transport, go to "
+"the <a href=\"@url\">MimeMail settings page</a> and select PHPMailer from "
+"the available e-mail engines."
+msgstr ""
+
+#: docbookwiki.profile:79
+msgid "PHPMailer is currently disabled."
+msgstr ""
+
+#: docbookwiki.profile:84
+msgid "Primary SMTP server"
+msgstr ""
+
+#: docbookwiki.profile:86
+msgid ""
+"The host name or IP address of your primary SMTP server.  Use !gmail-smtp "
+"for Google Mail."
+msgstr ""
+
+#: docbookwiki.profile:91
+msgid "Backup SMTP server"
+msgstr ""
+
+#: docbookwiki.profile:93
+msgid ""
+"Optional host name or IP address of a backup server, if the primary server "
+"fails.  You may override the default port below by appending it to the host "
+"name separated by a colon.  Example: !hostname"
+msgstr ""
+
+#: docbookwiki.profile:97
+msgid "SMTP port"
+msgstr ""
+
+#: docbookwiki.profile:101
+msgid "The standard SMTP port is 25, for Google Mail use 465."
+msgstr ""
+
+#: docbookwiki.profile:106
+msgid "Use secure protocol"
+msgstr ""
+
+#: docbookwiki.profile:108
+msgid "No"
+msgstr ""
+
+#: docbookwiki.profile:108
+msgid "SSL"
+msgstr ""
+
+#: docbookwiki.profile:108
+msgid "TLS"
+msgstr ""
+
+#: docbookwiki.profile:109
+msgid ""
+"Whether to use an encrypted connection to communicate with the SMTP server.  "
+"Google Mail requires SSL."
+msgstr ""
+
+#: docbookwiki.profile:114
+msgid ""
+"Note: This option has been disabled since your PHP installation does not "
+"seem to have support for OpenSSL."
+msgstr ""
+
+#: docbookwiki.profile:120
+msgid "SMTP authentication"
+msgstr ""
+
+#: docbookwiki.profile:121
+msgid "Leave blank if your SMTP server does not require authentication."
+msgstr ""
+
+#: docbookwiki.profile:127
+msgid "Username"
+msgstr ""
+
+#: docbookwiki.profile:129
+msgid "For Google Mail, enter your username including \"@gmail.com\"."
+msgstr ""
+
+#: docbookwiki.profile:134;148
+msgid "Password"
+msgstr ""
+
+#: docbookwiki.profile:139
+msgid "Hide password"
+msgstr ""
+
+#: docbookwiki.profile:141
+msgid ""
+"Check this option to permanently hide the plaintext password from peeking "
+"eyes. You may still change the password afterwards, but it won't be "
+"displayed anymore."
+msgstr ""
+
+#: docbookwiki.profile:148
+msgid "Change password"
+msgstr ""
+
+#: docbookwiki.profile:149
+msgid "Leave empty if you do not intend to change the current password."
+msgstr ""
+
+#: docbookwiki.profile:155
+msgid "Advanced SMTP settings"
+msgstr ""
+
+#: docbookwiki.profile:161
+msgid "\"From\" name"
+msgstr ""
+
+#: docbookwiki.profile:163
+msgid ""
+"Enter a name that should appear as the sender for all messages.  If left "
+"blank the site name will be used instead: %sitename."
+msgstr ""
+
+#: docbookwiki.profile:167
+msgid "Always set \"Reply-To\" address"
+msgstr ""
+
+#: docbookwiki.profile:169
+msgid ""
+"Enables setting the \"Reply-To\" address to the original sender of the "
+"message, if unset.  This is required when using Google Mail, which would "
+"otherwise overwrite the original sender."
+msgstr ""
+
+#: docbookwiki.profile:173
+msgid "Keep connection alive"
+msgstr ""
+
+#: docbookwiki.profile:175
+msgid ""
+"Whether to reuse an existing connection during a request.  Improves "
+"performance when sending a lot of e-mails at once."
+msgstr ""
+
+#: docbookwiki.profile:179
+msgid "Debug level"
+msgstr ""
+
+#: docbookwiki.profile:181
+msgid "Disabled"
+msgstr ""
+
+#: docbookwiki.profile:181
+msgid "Errors only"
+msgstr ""
+
+#: docbookwiki.profile:181
+msgid "Server responses"
+msgstr ""
+
+#: docbookwiki.profile:181
+msgid "Full communication"
+msgstr ""
+
+#: docbookwiki.profile:182
+msgid ""
+"Debug the communication with the SMTP server.  You normally shouldn't enable "
+"this unless you're trying to debug e-mail sending problems."
+msgstr ""
+
+#: docbookwiki.profile:203
+msgid ""
+"A test e-mail has been sent to %email. <a href=\"@watchdog-url\">Check the "
+"logs</a> for any error messages."
+msgstr ""
+
+#: docbookwiki.profile:211
+msgid "Test configuration"
+msgstr ""
+
+#: docbookwiki.profile:217
+msgid "Recipient"
+msgstr ""
+
+#: docbookwiki.profile:219
+msgid "Type in an address to have a test e-mail sent there."
+msgstr ""
+
+#: docbookwiki.profile:233
+msgid "You must enter a valid SMTP port number."
+msgstr ""
+
+#: docbookwiki.profile:249
+msgid "PHPMailer will be used to deliver all site e-mails."
+msgstr ""
+
+#: docbookwiki.profile:268;269
+msgid "PHPMailer has been disabled."
+msgstr ""
+
+#: docbookwiki.profile:250;269;283
+msgid "phpmailer"
+msgstr ""
+
+#: docbookwiki.profile:250
+msgid "PHPMailer has been enabled."
+msgstr ""
+
+#: docbookwiki.profile:283
+msgid "SMTP configuration changed."
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:14
+msgid ""
+"<p>The DocBookWiki filter allows you to enter content using DocBookWiki, a "
+"simple plain-text syntax that is transformed into valid XHTML and can be "
+"exported as DocBook/XML.</p>"
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:24
+msgid ""
+"Allows content to be submitted using DocBookWiki, a simple plain-text syntax "
+"that is transformed into valid XHTML and can be exported as DocBook/XML."
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:39
+msgid ""
+"Quick Tips:<ul>\n"
+"      <li>Paragraph is delimited by empty lines.</li>\n"
+"      <li>Lists are denoted by bullets and indentation.\n"
+"          Bullets can be: (*|1.|a.|A.|i.|I.), the items of the same list\n"
+"          have the same bullet and indentation.</li>\n"
+"      <li>Blocks are:\n"
+"        <ul>\n"
+"          <li>programlisting (--code), literallayout (--ll), screen (--scr)</"
+"li>\n"
+"          <li>figure (--fig title), example (--xmp title)</li>\n"
+"          <li>admonitions: --n or --note, --c or --caution, --w or --"
+"warning,\n"
+"              --tip, --imp or --important</li>\n"
+"        </ul>\n"
+"      <li>Inline marks:\n"
+"        <ul>\n"
+"          <li>Links: [link_name &gt; href]</li>\n"
+"          <li>Footnotes: [/...]</li>\n"
+"          <li>Menu items: [Options-&gt;General-&gt;Save (Ctrl-S)]</li>\n"
+"          <li>Filename: ~filename~, emphasis: _word_</li>\n"
+"          <li>Images: [&lt; filename &lt; width &lt; alt ]</li>\n"
+"          <li>xref: [&gt; section_id ]</li>\n"
+"        </ul>\n"
+"      </li>\n"
+"      </ul>For complete details on the DocBookWiki syntax, see the <a href="
+"\"http://daringfireball.net/projects/dbwiki/syntax\">Docbookwiki "
+"documentation</a> and <a href=\"http://michelf.com/projects/php-docbookwiki/"
+"extra/\">Docbookwiki Extra documentation</a> for tables, footnotes, and more."
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:64
+msgid ""
+"You can use <a href=\"@filter_tips\">DocBookWiki syntax</a> to format and "
+"style the text."
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:75;89
+msgid "DocBookWiki filter tips"
+msgstr ""
+
+#: modules/dbwiki/dbwiki.module:99
+msgid ""
+"\n"
+"## Header 2 ##\n"
+"### Header 3 ###\n"
+"#### Header 4 ####\n"
+"##### Header 5 #####\n"
+"(Hashes on right are optional)\n"
+"\n"
+"Link [Drupal](http://drupal.org)\n"
+"\n"
+"Inline markup like _italics_,\n"
+" **bold**, and `code()`.\n"
+"\n"
+"> Blockquote. Like email replies\n"
+">> And, they can be nested\n"
+"\n"
+"* Bullet lists are easy too\n"
+"- Another one\n"
+"+ Another one\n"
+"\n"
+"1. A numbered list\n"
+"2. Which is numbered\n"
+"3. With periods and a space\n"
+"\n"
+"And now some code:\n"
+"    // Code is indented text\n"
+"    is_easy() to_remember();"
+msgstr ""
+
+#: modules/dbwiki/dbwiki.info:0
+msgid "DocBookWiki filter"
+msgstr ""
+
+#: modules/dbwiki/dbwiki.info:0
+msgid ""
+"Allows content to be submitted using DocBookWiki, a simple plain-text syntax "
+"that is transformed into valid XHTML and can be exported as DocBook/XML ."
+msgstr ""
+
+#: modules/docbook/docbook.module:15
+msgid "A demonstration module."
+msgstr ""
+
+#: modules/docbook/docbook.module:67
+msgid "Add child page"
+msgstr ""
+
+#: modules/docbook/docbook.module:75
+msgid "Export XML/DocBook version"
+msgstr ""
+
+#: modules/docbook/docbook.module:77
+msgid "Exports an XML/DocBook version of this book page and its sub-pages."
+msgstr ""
+
+#: modules/docbook/docbook.install:94 modules/docbook/docbook.info:0
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:23
+msgid "DocBook"
+msgstr ""
+
+#: modules/docbook/docbook.install:96
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:25
+msgid ""
+"<em>DocBooks</em> are <em>Books</em> that can be exported into <em>DocBook/"
+"XML</em> format. It is also possible to import simple DocBook documents and "
+"to convert Books to DocBooks."
+msgstr ""
+
+#: modules/docbook/docbook.install:97
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:28
+msgid "This will create a new DocBook document (of type 'book' or 'article')."
+msgstr ""
+
+#: modules/docbook/docbook.install:130
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:31
+msgid "DocBook Section"
+msgstr ""
+
+#: modules/docbook/docbook.install:132
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:33
+msgid ""
+"A section is a DocBook chunk. It can be of type Chapter, Section, "
+"Simplesect, etc. Section and Simplesect can be nested under Chapter and "
+"Section, however Simplesect can have no nested sections."
+msgstr ""
+
+#: modules/docbook/docbook.install:133
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:36
+msgid ""
+"This will create a new DocBook Section ('chapter', 'section', 'simplesect', "
+"etc.)"
+msgstr ""
+
+#: modules/docbook/docbook.info:0
+msgid "Allows users to create, organize, export and import DocBook content."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:887
+msgid "A summary of the document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:888
+msgid "A unique alphanumeric identifier for the book/article."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:889
+msgid "Abstract"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:890
+msgid "Author"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:891
+msgid "Comment"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:892
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Content"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:893
+msgid "Copyright"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:894
+msgid "Copyright information about the document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:895
+msgid "Date"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:896
+msgid "ID"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:897
+msgid "Information about the release of the document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:898
+msgid "Keywords"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:899
+msgid "Keywords describing the content of the document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:900
+msgid "Release Info"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:901
+msgid "The content of this section."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:902
+msgid "The date of publication or revision of the document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:903
+msgid ""
+"The name of the author(s) of the document, in the format: firstname, "
+"lastname, email, organization, org_url (organization and url are optional)."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:904
+msgid "The type of the docbook document."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:905
+msgid ""
+"The type of this section. Chapter can be used only for the books. SimpleSect "
+"can have no nested sections."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:906
+msgid "Type"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.field.inc:907
+msgid "Unique alphanumeric identifier of the section."
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.features.inc:27;35
+msgid "Title"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.info:0
+msgid "docbookwiki_docbook"
+msgstr ""
+
+#: modules/features/docbookwiki_docbook/docbookwiki_docbook.info:0
+msgid "Features"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Bootstrap Subtheme"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Customized Bootstrap Theme."
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Navigation"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Top Bar"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Highlighted"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Help"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Primary"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Secondary"
+msgstr ""
+
+#: themes/bootstrap1/bootstrap1.info:0
+msgid "Footer"
+msgstr ""
+
+#: docbookwiki.profile:24
+msgid "Mail Settings"
+msgstr ""

@@ -39,3 +39,7 @@ sed -i /etc/apache2/apache2.conf \
 
 ### generates the file /etc/defaults/locale
 update-locale
+
+### replace nginx with apache2 (which is better for development)
+dev_scripts="/var/www/docbookwiki/profiles/docbookwiki/dev"
+$dev_scripts/apache2.sh start
