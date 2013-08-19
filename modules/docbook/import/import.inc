@@ -47,19 +47,19 @@ function _docbook_import_node_docbook($domnode) {
 
   $node->title = $title;
   $node->language = LANGUAGE_NONE;
-  $node->field_dbw_doctype['und'][0]['value'] = $domnode->nodeName;
-  $node->field_dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
-  $node->field_dbw_abstract['und'][0]['value'] = $info->abstract;
-  $node->field_dbw_copyright['und'][0]['value'] = $info->copyright;
-  $node->field_dbw_releaseinfo['und'][0]['value'] = $info->releaseinfo;
-  $node->field_dbw_date['und'][0]['value'] = $info->date;
+  $node->dbw_doctype['und'][0]['value'] = $domnode->nodeName;
+  $node->dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
+  $node->dbw_abstract['und'][0]['value'] = $info->abstract;
+  $node->dbw_copyright['und'][0]['value'] = $info->copyright;
+  $node->dbw_releaseinfo['und'][0]['value'] = $info->releaseinfo;
+  $node->dbw_date['und'][0]['value'] = $info->date;
   foreach ($info->keywords as $keyword) {
     $tid =  _docbook_import_get_tid($keyword);
-    $node->field_dbw_keywords['und'][] = array('tid' => $tid);
+    $node->dbw_keywords['und'][] = array('tid' => $tid);
   }
   foreach ($info->authors as $author) {
     $str_author = implode(', ', array_values($author));
-    $node->field_dbw_author['und'][] = array('value' => $str_author);
+    $node->dbw_author['und'][] = array('value' => $str_author);
   }
 
   $node->book['mlid'] = NULL;
@@ -106,10 +106,10 @@ function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias
 
   $node->title = $title;
   $node->language = LANGUAGE_NONE;
-  $node->field_dbw_content['und'][0]['value'] = $text;
-  $node->field_dbw_content['und'][0]['format'] = 'docbookwiki';
-  $node->field_dbw_sectype['und'][0]['value'] = $domnode->nodeName;
-  $node->field_dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
+  $node->dbw_content['und'][0]['value'] = $text;
+  $node->dbw_content['und'][0]['format'] = 'docbookwiki';
+  $node->dbw_sectype['und'][0]['value'] = $domnode->nodeName;
+  $node->dbw_id['und'][0]['value'] = $domnode->getAttribute('id');
 
   $id = $domnode->getAttribute('id');
   if (!empty($id))  {

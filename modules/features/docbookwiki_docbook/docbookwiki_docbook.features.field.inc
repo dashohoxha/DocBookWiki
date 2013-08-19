@@ -134,14 +134,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_abstract'.
-  $fields['node-docbook-field_dbw_abstract'] = array(
+  // Exported field: 'node-docbook-dbw_abstract'.
+  $fields['node-docbook-dbw_abstract'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_abstract',
+      'field_name' => 'dbw_abstract',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -182,7 +182,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_abstract',
+      'field_name' => 'dbw_abstract',
       'label' => 'Abstract',
       'required' => FALSE,
       'settings' => array(
@@ -200,14 +200,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_author'.
-  $fields['node-docbook-field_dbw_author'] = array(
+  // Exported field: 'node-docbook-dbw_author'.
+  $fields['node-docbook-dbw_author'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '-1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_author',
+      'field_name' => 'dbw_author',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -250,7 +250,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_author',
+      'field_name' => 'dbw_author',
       'label' => 'Author',
       'required' => FALSE,
       'settings' => array(
@@ -268,14 +268,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_copyright'.
-  $fields['node-docbook-field_dbw_copyright'] = array(
+  // Exported field: 'node-docbook-dbw_copyright'.
+  $fields['node-docbook-dbw_copyright'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_copyright',
+      'field_name' => 'dbw_copyright',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -320,7 +320,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_copyright',
+      'field_name' => 'dbw_copyright',
       'label' => 'Copyright',
       'required' => FALSE,
       'settings' => array(
@@ -338,14 +338,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_date'.
-  $fields['node-docbook-field_dbw_date'] = array(
+  // Exported field: 'node-docbook-dbw_date'.
+  $fields['node-docbook-dbw_date'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_date',
+      'field_name' => 'dbw_date',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -388,7 +388,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_date',
+      'field_name' => 'dbw_date',
       'label' => 'Date',
       'required' => FALSE,
       'settings' => array(
@@ -406,14 +406,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_doctype'.
-  $fields['node-docbook-field_dbw_doctype'] = array(
+  // Exported field: 'node-docbook-dbw_doctype'.
+  $fields['node-docbook-dbw_doctype'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_doctype',
+      'field_name' => 'dbw_doctype',
       'foreign keys' => array(),
       'indexes' => array(
         'value' => array(
@@ -457,7 +457,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_doctype',
+      'field_name' => 'dbw_doctype',
       'label' => 'Type',
       'required' => TRUE,
       'settings' => array(
@@ -472,14 +472,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_id'.
-  $fields['node-docbook-field_dbw_id'] = array(
+  // Exported field: 'node-docbook-dbw_id'.
+  $fields['node-docbook-dbw_id'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -522,7 +522,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'label' => 'ID',
       'required' => TRUE,
       'settings' => array(
@@ -540,14 +540,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_keywords'.
-  $fields['node-docbook-field_dbw_keywords'] = array(
+  // Exported field: 'node-docbook-dbw_keywords'.
+  $fields['node-docbook-dbw_keywords'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '-1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_keywords',
+      'field_name' => 'dbw_keywords',
       'foreign keys' => array(
         'tid' => array(
           'columns' => array(
@@ -595,7 +595,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_keywords',
+      'field_name' => 'dbw_keywords',
       'label' => 'Keywords',
       'required' => FALSE,
       'settings' => array(
@@ -613,14 +613,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook-field_dbw_releaseinfo'.
-  $fields['node-docbook-field_dbw_releaseinfo'] = array(
+  // Exported field: 'node-docbook-dbw_releaseinfo'.
+  $fields['node-docbook-dbw_releaseinfo'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_releaseinfo',
+      'field_name' => 'dbw_releaseinfo',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -663,7 +663,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_releaseinfo',
+      'field_name' => 'dbw_releaseinfo',
       'label' => 'Release Info',
       'required' => FALSE,
       'settings' => array(
@@ -681,14 +681,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook_section-field_dbw_content'.
-  $fields['node-docbook_section-field_dbw_content'] = array(
+  // Exported field: 'node-docbook_section-dbw_content'.
+  $fields['node-docbook_section-dbw_content'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_content',
+      'field_name' => 'dbw_content',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -729,7 +729,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_content',
+      'field_name' => 'dbw_content',
       'label' => 'Content',
       'required' => FALSE,
       'settings' => array(
@@ -747,14 +747,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook_section-field_dbw_id'.
-  $fields['node-docbook_section-field_dbw_id'] = array(
+  // Exported field: 'node-docbook_section-dbw_id'.
+  $fields['node-docbook_section-dbw_id'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'foreign keys' => array(
         'format' => array(
           'columns' => array(
@@ -797,7 +797,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'label' => 'ID',
       'required' => TRUE,
       'settings' => array(
@@ -815,14 +815,14 @@ function docbookwiki_docbook_field_default_fields() {
     ),
   );
 
-  // Exported field: 'node-docbook_section-field_dbw_sectype'.
-  $fields['node-docbook_section-field_dbw_sectype'] = array(
+  // Exported field: 'node-docbook_section-dbw_sectype'.
+  $fields['node-docbook_section-dbw_sectype'] = array(
     'field_config' => array(
       'active' => '1',
       'cardinality' => '1',
       'deleted' => '0',
       'entity_types' => array(),
-      'field_name' => 'field_dbw_sectype',
+      'field_name' => 'dbw_sectype',
       'foreign keys' => array(),
       'indexes' => array(
         'value' => array(
@@ -867,7 +867,7 @@ function docbookwiki_docbook_field_default_fields() {
         ),
       ),
       'entity_type' => 'node',
-      'field_name' => 'field_dbw_sectype',
+      'field_name' => 'dbw_sectype',
       'label' => 'Type',
       'required' => 1,
       'settings' => array(

@@ -102,8 +102,8 @@
       hide($content['links']);
 
       // don't render fields dbw_id and dbw_doctype
-      hide($content['field_dbw_id']);
-      hide($content['field_dbw_sectype']);
+      hide($content['dbw_id']);
+      hide($content['dbw_sectype']);
 
       print render($content);
     ?>

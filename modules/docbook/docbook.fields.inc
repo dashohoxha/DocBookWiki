@@ -35,13 +35,13 @@ function _docbook_install_fields() {
   return array(
 
     array(
-      'field_name' => 'field_dbw_author',
+      'field_name' => 'dbw_author',
       'type' => 'text',
       'cardinality' => '-1',
     ),
 
     array(
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'type' => 'text',
       'settings' => array(
         'max_length' => '50',
@@ -49,7 +49,7 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_keywords',
+      'field_name' => 'dbw_keywords',
       'type' => 'taxonomy_term_reference',
       'cardinality' => '-1',
       'settings' => array(
@@ -63,7 +63,7 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_date',
+      'field_name' => 'dbw_date',
       'type' => 'text',
       'settings' => array(
         'max_length' => '50',
@@ -71,7 +71,7 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_releaseinfo',
+      'field_name' => 'dbw_releaseinfo',
       'type' => 'text',
       'settings' => array(
         'max_length' => '100',
@@ -79,17 +79,17 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_abstract',
+      'field_name' => 'dbw_abstract',
       'type' => 'text_long',
     ),
 
     array(
-      'field_name' => 'field_dbw_copyright',
+      'field_name' => 'dbw_copyright',
       'type' => 'text_long',
     ),
 
     array(
-      'field_name' => 'field_dbw_doctype',
+      'field_name' => 'dbw_doctype',
       'type' => 'list_text',
       'settings' => array(
         'allowed_values' => array(
@@ -101,12 +101,12 @@ function _docbook_install_fields() {
     ),
 
     array(
-      'field_name' => 'field_dbw_content',
+      'field_name' => 'dbw_content',
       'type' => 'text_long',
     ),
 
     array(
-      'field_name' => 'field_dbw_sectype',
+      'field_name' => 'dbw_sectype',
       'type' => 'list_text',
       'settings' => array(
         'allowed_values' => array(
@@ -131,7 +131,7 @@ function _docbook_install_instancies() {
     // docbook instancies
 
     array(
-      'field_name' => 'field_dbw_doctype',
+      'field_name' => 'dbw_doctype',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Type',
@@ -147,7 +147,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'ID',
@@ -160,7 +160,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_abstract',
+      'field_name' => 'dbw_abstract',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Abstract',
@@ -172,7 +172,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_keywords',
+      'field_name' => 'dbw_keywords',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Keywords',
@@ -184,7 +184,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_author',
+      'field_name' => 'dbw_author',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Author',
@@ -196,7 +196,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_date',
+      'field_name' => 'dbw_date',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Date',
@@ -208,7 +208,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_releaseinfo',
+      'field_name' => 'dbw_releaseinfo',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Release Info',
@@ -220,7 +220,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_copyright',
+      'field_name' => 'dbw_copyright',
       'entity_type' => 'node',
       'bundle' => 'docbook',
       'label' => 'Copyright',
@@ -239,7 +239,7 @@ function _docbook_install_instancies() {
     // docbook_section instancies
 
     array(
-      'field_name' => 'field_dbw_sectype',
+      'field_name' => 'dbw_sectype',
       'entity_type' => 'node',
       'bundle' => 'docbook_section',
       'label' => 'Type',
@@ -255,7 +255,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_id',
+      'field_name' => 'dbw_id',
       'entity_type' => 'node',
       'bundle' => 'docbook_section',
       'label' => 'ID',
@@ -268,7 +268,7 @@ function _docbook_install_instancies() {
     ),
 
     array(
-      'field_name' => 'field_dbw_content',
+      'field_name' => 'dbw_content',
       'entity_type' => 'node',
       'bundle' => 'docbook_section',
       'label' => 'Content',

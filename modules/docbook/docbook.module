@@ -113,8 +113,8 @@ function docbook_element_info_alter(&$type) {
 function docbook_filter_process_format($element) {
   $element = filter_process_format($element);
   // Change the default text format of the field
-  // 'field_dbw_content' to 'DocBookWiki'.
-  if ($element['#bundle'] == 'docbook_section' && $element['#field_name'] == 'field_dbw_content') {
+  // 'dbw_content' to 'DocBookWiki'.
+  if ($element['#bundle'] == 'docbook_section' && $element['#field_name'] == 'dbw_content') {
     $element['format']['format']['#default_value'] = 'docbookwiki';
   }
   return $element;
@@ -143,7 +143,7 @@ function book_export_docbook($nid) {
   }
   //print '<xmp>'; print_r($node); print '</xmp>';  exit(0);  //debug
 
-  $id = $node->field_dbw_id['und'][0]['value'];
+  $id = $node->dbw_id['und'][0]['value'];
   $tree = book_menu_subtree_data($node->book);
 
   $depth = $node->book['depth'];
@@ -162,7 +162,7 @@ EOD;
 
     $info = docbook_info_export($node);
 
-    $doctype = $node->field_dbw_doctype['und'][0]['value'];
+    $doctype = $node->dbw_doctype['und'][0]['value'];
     $title = $node->title;
 
     $docbook = <<<EOD
@@ -192,43 +192,43 @@ function docbook_info_export($node) {
   include_once $file;
   $info = new Info;
 
-  if (isset($node->field_dbw_abstract['und'])) {
-    $abstract = $node->field_dbw_abstract['und'][0]['value'];
+  if (isset($node->dbw_abstract['und'])) {
+    $abstract = $node->dbw_abstract['und'][0]['value'];
     $info->abstract = trim($abstract);
   }
 
-  if (isset($node->field_dbw_copyright['und'])) {
-    $copyright = $node->field_dbw_copyright['und'][0]['value'];
+  if (isset($node->dbw_copyright['und'])) {
+    $copyright = $node->dbw_copyright['und'][0]['value'];
     $info->copyright = trim($copyright);
   }
 
-  if (isset($node->field_dbw_release['und'])) {
-    $release = $node->field_dbw_release['und'][0]['value'];
+  if (isset($node->dbw_release['und'])) {
+    $release = $node->dbw_release['und'][0]['value'];
     $info->release = trim($release);
   }
 
-  if (isset($node->field_dbw_date['und'])) {
-    $date = $node->field_dbw_date['und'][0]['value'];
+  if (isset($node->dbw_date['und'])) {
+    $date = $node->dbw_date['und'][0]['value'];
     $info->date = trim($date);
   }
 
-  if (isset($node->field_dbw_keywords['und'])) {
-    $keywords = $node->field_dbw_keywords['und'];
+  if (isset($node->dbw_keywords['und'])) {
+    $keywords = $node->dbw_keywords['und'];
     foreach ($keywords as $keyword) {
       $term = taxonomy_term_load($keyword['tid']);
       $info->keywords[] = $term->name;
     }
   }
 
-  if (isset($node->field_dbw_author['und'])) {
-    $authors = $node->field_dbw_author['und'];
+  if (isset($node->dbw_author['und'])) {
+    $authors = $node->dbw_author['und'];
     foreach ($authors as $author) {
       $info->parse_author($author['value']);
     }
   }
 
   $doc_info = $info->to_xml();
-  $doctype = $node->field_dbw_doctype['und'][0]['value'];  // book or article
+  $doctype = $node->dbw_doctype['und'][0]['value'];  // book or article
   $infotag = $doctype."info";
 
   return "
@@ -259,7 +259,7 @@ function docbook_node_export($node, $children = '') {
   include_once $file;
 
   $parser = new WikiParser;
-  $dbw_content = $node->field_dbw_content['und'][0]['value'];
+  $dbw_content = $node->dbw_content['und'][0]['value'];
   $tpl = $parser->parse_string($dbw_content);
 
   $indent = '';
@@ -271,8 +271,8 @@ function docbook_node_export($node, $children = '') {
   $xml_content = $tpl->to_xml($indent);
   if (trim($xml_content)=='')  $xml_content = '<para/>';
 
-  $section = $node->field_dbw_sectype['und'][0]['value'];
-  $id = $node->field_dbw_id['und'][0]['value'];
+  $section = $node->dbw_sectype['und'][0]['value'];
+  $id = $node->dbw_id['und'][0]['value'];
   $title = $node->title;
 
   $element = "
@@ -305,7 +305,7 @@ function docbook_theme($existing, $type, $theme, $path) {
     'node__docbook_section' => array(
       'template' => 'node--docbook-section' ,
     ),
-    'field__field_dbw_author' => array(
+    'field__dbw_author' => array(
     ),
   );
 }
@@ -328,7 +328,7 @@ function docbook_preprocess_node(&$variables) {
 /**
  * Implementing theme function theme_HOOK().
  */
-function theme_field__field_dbw_author($variables) {
+function theme_field__dbw_author($variables) {
   //krumo($variables);  //debug
 
   $output = '';
