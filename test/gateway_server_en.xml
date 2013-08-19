@@ -1229,7 +1229,7 @@ The script backs up all the files that are listed in the file <filename>config-f
     <section id="GNU-FDL">
       <title>GNU Free Documentation License</title>
       <para><indexterm role="cp" significance="normal"><primary>FDL, GNU Free Documentation License</primary></indexterm>Version 1.2, November 2002
-<screen>Copyright © 2000,2001,2002 Free Software Foundation, Inc.
+<screen>Copyright &#169; 2000,2001,2002 Free Software Foundation, Inc.
 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
 
 Everyone is permitted to copy and distribute verbatim copies
