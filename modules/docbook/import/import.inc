@@ -94,6 +94,8 @@ function _docbook_import_get_tid($term_name) {
 }
 
 function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias) {
+  static $weight = 0;
+
   $doc1 = _docbook_node2doc($domnode);
   $title = _docbook_apply_stylesheet($doc1, 'get_title.xsl');
   $text  = _docbook_apply_stylesheet($doc1, 'xml2text.xsl');
@@ -118,6 +120,7 @@ function _docbook_import_node_docbook_section($domnode, $bid, $plid, $book_alias
   $node->book['bid'] = $bid;
   $node->book['plid'] = $plid;
   $node->book['mlid'] = NULL;
+  $node->book['weight'] = $weight++;
 
   node_save($node);
   //print_r($node);  exit(0);  //debug
