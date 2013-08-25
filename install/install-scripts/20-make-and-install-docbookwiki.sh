@@ -42,6 +42,9 @@ drush site-install --verbose --yes docbookwiki \
       --site-name="$site_name" --site-mail="$site_mail" \
       --account-name="$account_name" --account-pass="$account_pass" --account-mail="$account_mail"
 
+### disable module comment
+drush --yes pm-disable comment
+
 ### import test books
 profiles/docbookwiki/test/import-docs.sh
 

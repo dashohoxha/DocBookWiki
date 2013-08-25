@@ -52,13 +52,6 @@ function docbookwiki_docbook_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: delete terms in docbook_keywords.
-  $permissions['delete terms in docbook_keywords'] = array(
-    'name' => 'delete terms in docbook_keywords',
-    'roles' => array(),
-    'module' => 'taxonomy',
-  );
-
   // Exported permission: edit any docbook content.
   $permissions['edit any docbook content'] = array(
     'name' => 'edit any docbook content',
@@ -85,13 +78,6 @@ function docbookwiki_docbook_user_default_permissions() {
     'name' => 'edit own docbook_section content',
     'roles' => array(),
     'module' => 'node',
-  );
-
-  // Exported permission: edit terms in docbook_keywords.
-  $permissions['edit terms in docbook_keywords'] = array(
-    'name' => 'edit terms in docbook_keywords',
-    'roles' => array(),
-    'module' => 'taxonomy',
   );
 
   // Exported permission: use text format docbookwiki.
