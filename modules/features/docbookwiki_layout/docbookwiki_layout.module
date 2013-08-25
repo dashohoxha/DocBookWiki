@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the docbookwiki_layout feature.
+ */
+
+include_once 'docbookwiki_layout.features.inc';

@@ -42,15 +42,21 @@ drush site-install --verbose --yes docbookwiki \
       --site-name="$site_name" --site-mail="$site_mail" \
       --account-name="$account_name" --account-pass="$account_pass" --account-mail="$account_mail"
 
+### disable module comment
+drush --yes pm-disable comment
+
+### import test books
+profiles/docbookwiki/test/import-docs.sh
+
 ### install features modules
-#drush --yes pm-enable docbookwiki_docbook
-#drush --yes features-revert docbookwiki_docbook
+drush --yes pm-enable docbookwiki_docbook
+drush --yes features-revert docbookwiki_docbook
+
+drush --yes pm-enable docbookwiki_layout
+drush --yes features-revert docbookwiki_layout
 
 #drush --yes pm-enable docbookwiki_misc
 #drush --yes features-revert docbookwiki_misc
-
-#drush --yes pm-enable docbookwiki_layout
-#drush --yes features-revert docbookwiki_layout
 
 #drush --yes pm-enable docbookwiki_disqus
 #drush --yes pm-enable docbookwiki_content
