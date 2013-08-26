@@ -25,6 +25,18 @@ function docbook_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
+  // The 'dbw-list-books' command
+  $items['dbw-list-books'] = array(
+    'description' => "Print a list of Book-s.",
+    'arguments' => array(),
+    'options' => array(),
+    'examples' => array(
+      "drush dbw-list-books" => 'Print a list of Book-s.',
+    ),
+    'aliases' => array('dblb'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+  );
+
   // The 'dbw-export' command
   $items['dbw-export'] = array(
     'description' => "Export a book from DocBookWiki in DocBook(XML) format.",
@@ -94,6 +106,10 @@ function docbook_drush_command() {
  */
 function docbook_drush_help($section) {
   switch ($section) {
+    case 'drush:dbw-list':
+      return dt("Print a list of DocBook-s.");
+    case 'drush:dbw-list-books':
+      return dt("Print a list of Book-s.");
     case 'drush:dbw-export':
       return dt("Export a book from DocBookWiki.");
     case 'drush:dbw-import':
@@ -124,6 +140,30 @@ function drush_docbook_dbw_list() {
     }
     else {
       print "node/$nid\n";
+    }
+  }
+}
+
+/**
+ * Command callback for dbw-list-books.
+ */
+function drush_docbook_dbw_list_books() {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'book')
+    ->propertyCondition('status', 1);
+  $result = $query->execute();
+
+  foreach($result['node'] as $nid => $record) {
+    $node = node_load($nid);
+    if ($node->book['depth'] > 1)  continue;
+
+    $alias = drupal_lookup_path("alias", "node/$nid");
+    if ($alias) {
+      print "$alias\n";
+    }
+    else {
+      print "node/$nid $node->title\n";
     }
   }
 }
