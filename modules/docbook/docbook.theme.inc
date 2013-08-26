@@ -1,5 +1,6 @@
 <?php
 /**
+ * @file
  * Theme related functions.
  */
 
