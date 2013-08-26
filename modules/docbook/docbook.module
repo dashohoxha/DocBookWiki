@@ -120,6 +120,7 @@ function docbook_filter_process_format($element) {
   // Change the default text format of the field
   // 'dbw_content' to 'DocBookWiki'.
   if ($element['#bundle'] == 'docbook_section' && $element['#field_name'] == 'dbw_content') {
+    $element['format']['format']['#options'] = array('docbookwiki' => 'DocBookWiki');
     $element['format']['format']['#default_value'] = 'docbookwiki';
   }
   return $element;
