@@ -98,6 +98,7 @@ function docbookwiki_layout_context_default_contexts() {
   $context->conditions = array(
     'node' => array(
       'values' => array(
+        'book' => 'book',
         'docbook_section' => 'docbook_section',
       ),
       'options' => array(
@@ -187,6 +188,16 @@ function docbookwiki_layout_context_default_contexts() {
   $context->description = 'Layout of a page.';
   $context->tag = '';
   $context->conditions = array(
+    'node' => array(
+      'values' => array(
+        'article' => 'article',
+        'blog' => 'blog',
+        'page' => 'page',
+      ),
+      'options' => array(
+        'node_form' => '0',
+      ),
+    ),
     'path' => array(
       'values' => array(
         'contact' => 'contact',
