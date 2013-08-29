@@ -76,6 +76,25 @@ function docbook_drush_command() {
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
   );
 
+  // The 'dbw-convert' command
+  $items['dbw-convert'] = array(
+    'description' => "Convert between Book and DocBook.",
+    'arguments' => array(
+      'bid' => 'The id of the book to be converted.',
+    ),
+    'options' => array(
+      'type' => array(
+        'description' => 'Type to convert to: book or docbook (default docbook).',
+        'example-value' => 'docbook',
+      ),
+    ),
+    'examples' => array(
+      "drush dbw-convert 47" => 'Convert the book with nid=47 to DocBook.',
+    ),
+    'aliases' => array('dbc'),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
+  );
+
   // These will appear in the list of topics when `drush topic` is executed.
   $items['docbook'] = array(
     'description' => dt('Importing and exporting DocBook files.'),
@@ -169,4 +188,26 @@ function drush_docbook_dbw_import($file) {
 function drush_docbook_docbook2dbw($file) {
   include_once drupal_get_path('module', 'docbook') . '/import/transform.inc';
   docbook_docbook2dbw($file);
+}
+
+/**
+ * Command callback for dbw-convert.
+ */
+function drush_docbook_dbw_convert($alias) {
+  $book_type = drush_get_option('type');
+  if (!$book_type)  $book_type = 'docbook';
+
+  // get the id of the book to be converted
+  $path = drupal_lookup_path("source", $alias);
+  if (!$path)  $path = $alias;
+  $book_id = str_replace('node/', '', $path);
+
+  //check whether such a book exists
+  $node = node_load($book_id);
+  if (!$node) {
+    return drush_set_error('NOT_FOUND', dt("The book '!book' could not be found!", array('!book' => $alias)));
+  }
+
+  include_once drupal_get_path('module', 'docbook') . '/include/docbook.change_type.inc';
+  docbook_change_book_type($book_id, $book_type);
 }
