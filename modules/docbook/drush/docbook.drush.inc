@@ -15,16 +15,17 @@ function docbook_drush_command() {
 
   // The 'dbw-list' command
   $items['dbw-list'] = array(
-    'description' => "Print a list of DocBook-s or Book-s.",
+    'description' => "Print a list of books.",
     'arguments' => array(),
     'options' => array(
       'type' => array(
-        'description' => 'Type of books to be listed: book or docbook (default docbook).',
-        'example-value' => 'book',
+        'description' => 'Type of books to be listed (book or docbook).',
+        'example-value' => 'docbook',
       ),
     ),
     'examples' => array(
-      "drush dbw-list" => 'Print a list of DocBook-s.',
+      "drush dbw-list" => 'Print a list of all books.',
+      "drush dbl --type=docbook" => 'Print a list of DocBook-s.',
     ),
     'aliases' => array('dbl'),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
@@ -100,7 +101,7 @@ function docbook_drush_command() {
 function docbook_drush_help($section) {
   switch ($section) {
     case 'drush:dbw-list':
-      return dt("Print a list of DocBook-s or Book-s.");
+      return dt("Print a list of books.");
     case 'drush:dbw-export':
       return dt("Export a book from DocBookWiki.");
     case 'drush:dbw-import':
@@ -119,8 +120,17 @@ function docbook_drush_help($section) {
  */
 function drush_docbook_dbw_list() {
   $book_type = drush_get_option('type');
-  if (!$book_type)  $book_type = 'docbook';
+  if ($book_type) {
+    _drush_docbook_list($book_type);
+  }
+  else {
+    _drush_docbook_list('book');
+    _drush_docbook_list('docbook');
+  }
+}
 
+function _drush_docbook_list($book_type) {
+  print "Books of type: $book_type\n";
   foreach (book_get_books() as $book) {
     if ($book['type'] != $book_type)  continue;
 
@@ -128,7 +138,7 @@ function drush_docbook_dbw_list() {
     if (!$path)  $path = $book['link_path'];
 
     $title = $book['title'];
-    print "$path : $title\n";
+    print "   $path : $title\n";
   }
 }
 
