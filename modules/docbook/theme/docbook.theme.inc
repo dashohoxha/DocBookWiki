@@ -11,9 +11,11 @@ function docbook_theme($existing, $type, $theme, $path) {
   return array (
     'node__docbook' => array(
       'template' => 'node--docbook',
+      'path' => drupal_get_path('module', 'docbook') . '/theme',
     ),
     'node__docbook_section' => array(
       'template' => 'node--docbook-section' ,
+      'path' => drupal_get_path('module', 'docbook') . '/theme',
     ),
     'field__dbw_author' => array(
     ),

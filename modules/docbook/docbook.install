@@ -7,7 +7,7 @@
 
 // Get the functions for creating/deleting fields and instancies
 // for the custom content types DocBook and DocBook_Section.
-include drupal_get_path('module', 'docbook') . '/docbook.fields.inc';
+include drupal_get_path('module', 'docbook') . '/include/docbook.fields.inc';
 
 /**
  * Implements hook_install().

@@ -7,8 +7,8 @@
  * to convert Books to DocBooks.
  */
 
-include_once dirname(__FILE__) . '/docbook.theme.inc';
-include_once dirname(__FILE__) . '/docbook.export.inc';
+include_once dirname(__FILE__) . '/theme/docbook.theme.inc';
+include_once dirname(__FILE__) . '/include/docbook.export.inc';
 
 /**
  * Implements hook_help().
@@ -131,5 +131,5 @@ function docbook_filter_process_format($element) {
  */
 function docbook_init()
 {
-  drupal_add_css(drupal_get_path('module', 'docbook') . '/docbook.css');
+  drupal_add_css(drupal_get_path('module', 'docbook') . '/theme/docbook.css');
 }
