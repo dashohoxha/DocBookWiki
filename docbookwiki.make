@@ -40,6 +40,17 @@ projects[boxes][version] = "1.1"
 projects[delete_all][version] = "1.1"
 projects[drush_language][version] = "1.2"
 
+
+;--------------------
+; Book related
+;--------------------
+projects[book_delete][version] = "1.0"
+projects[replicate][version] = "1.0"
+projects[book_copy][version] = "2.0-rc1"
+projects[outline_designer][version] = "2.x-dev"
+projects[book_title_override][version] = "1.x-dev"
+projects[book_access][version] = "2.1"
+
 ;--------------------
 ; Performance
 ;--------------------
