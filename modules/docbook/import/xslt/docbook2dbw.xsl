@@ -49,7 +49,7 @@ Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
         | title | para | text()
 
         | screen | programlisting | literallayout | figure | example
-        | note | warning | caution | important|tip
+        | note | warning | caution | important | tip
 
         | orderedlist | itemizedlist| listitem | @numeration
 

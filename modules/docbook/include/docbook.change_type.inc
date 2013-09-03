@@ -40,11 +40,9 @@ function _docbook_convert_to_book($nid) {
     $node->path = array('alias' => $book_id);
   }
   else {
-    $node->body = $node->dbw_content;
-    //TODO: convert dbw content to html
-    //$node->body['und'][0]['value'] = dbw2html($node->dbw_content['und'][0]['value']);
-    //$node->body['und'][0]['format'] = 'full_html';
-
+    $txt = $node->dbw_content['und'][0]['value'];
+    $node->body['und'][0]['value'] = _filter_dbwiki($txt, NULL);
+    $node->body['und'][0]['format'] = 'full_html';
     $sect_id = $node->dbw_id['und'][0]['value'];
     $node->path = array('alias' => "$book_id/$sect_id");
   }
@@ -56,15 +54,18 @@ function _docbook_convert_get_body_from_info($node) {
   $body = '';
 
   if (!empty($node->dbw_abstract['und'][0]['value'])) {
-    $body .= "\n@abstract: " . $node->dbw_abstract['und'][0]['value'];
+    $body .= '@abstract: ' . $node->dbw_abstract['und'][0]['value'];
+    $body .= "\n\n";
   }
 
   if (!empty($node->dbw_date['und'][0]['value'])) {
-    $body .= "\n@date: " . $node->dbw_date['und'][0]['value'];
+    $body .= '@date: ' . $node->dbw_date['und'][0]['value'];
+    $body .= "\n\n";
   }
 
   if (!empty($node->dbw_releaseinfo['und'][0]['value'])) {
-    $body .= "\n@releaseinfo: " . $node->dbw_releaseinfo['und'][0]['value'];
+    $body .= '@releaseinfo: ' . $node->dbw_releaseinfo['und'][0]['value'];
+    $body .= "\n\n";
   }
 
   if (isset($node->dbw_keywords['und'])) {
@@ -75,19 +76,22 @@ function _docbook_convert_get_body_from_info($node) {
       $arr_terms[] = $term->name;
     }
     if (!empty($arr_terms)) {
-      $body .= "\n@keywords: " . implode(', ', $arr_terms);
+      $body .= '@keywords: ' . implode(', ', $arr_terms);
+      $body .= "\n\n";
     }
   }
 
   if (isset($node->dbw_author['und'])) {
     $authors = $node->dbw_author['und'];
     foreach ($authors as $author) {
-      $body .= "\n@author: $author";
+      $body .= '@author: ' . $author['value'];
+      $body .= "\n\n";
     }
   }
 
   if (!empty($node->dbw_copyright['und'][0]['value'])) {
-    $body .= "\n@copyright: " . $node->dbw_copyright['und'][0]['value'];
+    $body .= '@copyright: ' . $node->dbw_copyright['und'][0]['value'];
+    $body .= "\n\n";
   }
 
   return $body;
@@ -105,26 +109,72 @@ function _docbook_convert_to_docbook($nid) {
     $node->type = 'docbook';
     $node->dbw_doctype['und'][0]['value'] = 'article';
     $node->dbw_id['und'][0]['value'] = $node->nid;
-    if (!empty($node->body['und'][0]['value'])) {
-      $node->dbw_abstract['und'][0]['value'] = $node->body['und'][0]['value'];
-    }
-    $node->dbw_copyright['und'][0]['value'] =
-      'Copyright (C) 2013 Firstname Lastname. Permission is granted to copy,
-distribute and/or modify this document under the terms of the GNU Free
-Documentation License, Version 1.1 or any later version published by the Free
-Software Foundation; with no Invariant Sections, with no Front-Cover Texts,
-and with no Back-Cover Texts. A copy of the license is included in the section
-entitled "GNU Free Documentation License.';
+    _docbook_convert_get_info_from_body($node);
   }
   else {
     $node->type = 'docbook_section';
     $node->dbw_sectype['und'][0]['value'] = 'section';
     $node->dbw_id['und'][0]['value'] = $node->nid; //TODO: find a better id
     $node->dbw_content = $node->body;
-    //TODO: convert to filter format docbookwiki
-    //$node->dbw_content['und'][0]['value'] = $node->body['und'][0]['value'];
-    //$node->dbw_content['und'][0]['format'] = $node->body['und'][0]['format'];
+
+    $text = _docbook_convert_html2text($node->body['und'][0]['value']);
+    $node->dbw_content['und'][0]['value'] = $text;
+    $node->dbw_content['und'][0]['format'] = 'docbookwiki';
   }
 
   node_save($node);
+}
+
+function _docbook_convert_get_info_from_body(&$node) {
+  $file = drupal_get_path('module', 'dbwiki') . "/converter/class.Info.php";
+  include_once $file;
+
+  $info = new Info;
+  $content = $node->body['und'][0]['value'];
+  $info->parse($content);
+
+  $node->dbw_abstract['und'][0]['value'] = $info->abstract;
+  $node->dbw_date['und'][0]['value'] = $info->date;
+  $node->dbw_releaseinfo['und'][0]['value'] = $info->releaseinfo;
+  $node->dbw_copyright['und'][0]['value'] = $info->copyright;
+
+  foreach ($info->authors as $author) {
+    $str_author = implode(', ', array_values($author));
+    $node->dbw_author['und'][] = array('value' => $str_author);
+  }
+
+  $file = drupal_get_path('module', 'docbook') . "/import/import.inc";
+  include_once $file;
+  foreach ($info->keywords as $keyword) {
+    $tid =  _docbook_import_get_tid($keyword);
+    $node->dbw_keywords['und'][] = array('tid' => $tid);
+  }
+}
+
+function _docbook_convert_html2text($html) {
+  // Set up some configuration options for Tidy
+  $config = array(
+                  'add-xml-decl' => true,
+                  'output-xml' => TRUE,
+		  'doctype' => 'omit',
+                  'char-encoding' => 'utf8',
+                  //'input-encoding' => 'utf8',
+                  //'output-encoding' => 'utf8',
+                  'enclose-text' => TRUE,
+                  'drop-proprietary-attributes' => TRUE,
+                  'clean' => TRUE,
+                  'logical-emphasis' => TRUE,
+                  'preserve-entities' => TRUE,
+    );
+
+  $tidy = new Tidy();
+  $tidy->parseString($html, $config, 'utf8');
+  $tidy->cleanRepair();
+  $xhtml = tidy_get_output($tidy);
+
+  include_once drupal_get_path('module', 'docbook') . "/import/transform.inc";
+  $dbw = _docbook_xslt($xhtml, 'xhtml2dbw.xsl');
+  $text = _docbook_xslt($dbw, 'xml2text.xsl');
+
+  return $text;
 }

@@ -9,19 +9,17 @@
  */
 function docbook_docbook2dbw($file)
 {
-  $xml = _docbook_xslt($file, 'docbook2dbw.xsl');
-  print $xml;
+  $docbook = file_get_contents($file);
+  $dbw = _docbook_xslt($docbook, 'docbook2dbw.xsl');
+  print $dbw;    // output to stdout
 }
 
 /**
- * Transform the given XML file with the given XSL
- * and return the result as a string.
+ * Transform the given XML string with the given
+ * XSL file and return the result as a string.
  */
-function _docbook_xslt($file, $xsl)
+function _docbook_xslt($xml, $xsl)
 {
-  //get the contents of the file
-  $xml = file_get_contents($file);
-
   $xml = _docbook_xslt_preprocess($xml);
 
   $dom = new DOMDocument;

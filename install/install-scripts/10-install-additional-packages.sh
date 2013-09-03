@@ -20,7 +20,8 @@ apt-get -y upgrade
 ### install other needed packages
 install aptitude tasksel vim nano psmisc language-pack-en
 install mysql-server ssmtp memcached php5-memcached \
-        php5-xsl php5-mysql php5-gd php-db php5-dev php-pear php5-curl php-apc \
+        php5-mysql php5-gd php-db php5-dev php-pear php5-curl php-apc \
+        php5-xsl php5-tidy \
         make ssl-cert gawk unzip wget diff phpmyadmin git
 install screen logwatch
 
