@@ -108,14 +108,19 @@ function _docbook_convert_to_docbook($nid) {
   if ($depth == 1) {
     $node->type = 'docbook';
     $node->dbw_doctype['und'][0]['value'] = 'article';
-    $node->dbw_id['und'][0]['value'] = $node->nid;
+
+    $dbw_id = pathauto_cleanstring($node->title);
+    pathauto_alias_uniquify($dbw_id, 'node/'.$node->nid, 'und');
+    $node->dbw_id['und'][0]['value'] = $dbw_id;
+
     _docbook_convert_get_info_from_body($node);
   }
   else {
     $node->type = 'docbook_section';
     $node->dbw_sectype['und'][0]['value'] = 'section';
-    $node->dbw_id['und'][0]['value'] = $node->nid; //TODO: find a better id
-    $node->dbw_content = $node->body;
+
+    $dbw_id = pathauto_cleanstring($node->title);
+    $node->dbw_id['und'][0]['value'] = $dbw_id;
 
     $text = _docbook_convert_html2text($node->body['und'][0]['value']);
     $node->dbw_content['und'][0]['value'] = $text;
@@ -126,9 +131,6 @@ function _docbook_convert_to_docbook($nid) {
 }
 
 function _docbook_convert_get_info_from_body(&$node) {
-  $file = drupal_get_path('module', 'dbwiki') . "/converter/class.Info.php";
-  include_once $file;
-
   $info = new Info;
   $content = $node->body['und'][0]['value'];
   $info->parse($content);
@@ -143,8 +145,6 @@ function _docbook_convert_get_info_from_body(&$node) {
     $node->dbw_author['und'][] = array('value' => $str_author);
   }
 
-  $file = drupal_get_path('module', 'docbook') . "/import/import.inc";
-  include_once $file;
   foreach ($info->keywords as $keyword) {
     $tid =  _docbook_import_get_tid($keyword);
     $node->dbw_keywords['und'][] = array('tid' => $tid);

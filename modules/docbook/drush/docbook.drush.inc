@@ -208,6 +208,9 @@ function drush_docbook_dbw_convert($alias) {
     return drush_set_error('NOT_FOUND', dt("The book '!book' could not be found!", array('!book' => $alias)));
   }
 
+  include_once drupal_get_path('module', 'pathauto') . "/pathauto.inc";
+  include_once drupal_get_path('module', 'dbwiki') . "/converter/class.Info.php";
+  include_once drupal_get_path('module', 'docbook') . "/import/import.inc";
   include_once drupal_get_path('module', 'docbook') . '/include/docbook.change_type.inc';
   docbook_change_book_type($book_id, $book_type);
 }

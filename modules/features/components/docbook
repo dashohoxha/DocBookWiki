@@ -38,3 +38,16 @@ user_permission:delete own docbook_section content
 user_permission:delete any docbook_section content
 user_permission:edit terms in docbook_keywords
 user_permission:delete terms in docbook_keywords
+variable:pathauto_node_docbook_pattern
+variable:pathauto_node_docbook_section_pattern
+variable:pathauto_reduce_ascii
+variable:pathauto_separator
+variable:pathauto_transliterate
+variable:pathauto_update_action
+variable:subpathauto_depth
+variable:subpathauto_ignore_admin
+user_permission:administer url aliases
+user_permission:create url aliases
+user_permission:administer pathauto
+user_permission:notify of path changes
+user_permission:administer redirects

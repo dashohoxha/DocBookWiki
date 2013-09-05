@@ -73,6 +73,10 @@ dependencies[] = entity
 dependencies[] = replicate
 dependencies[] = book_copy
 dependencies[] = outline_designer
+dependencies[] = pathauto
+dependencies[] = subpathauto
+dependencies[] = redirect
+dependencies[] = pathologic
 
 
 ;--------------------

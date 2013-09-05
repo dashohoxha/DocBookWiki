@@ -10,6 +10,33 @@
 function docbookwiki_docbook_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: administer pathauto.
+  $permissions['administer pathauto'] = array(
+    'name' => 'administer pathauto',
+    'roles' => array(
+      0 => 'administrator',
+    ),
+    'module' => 'pathauto',
+  );
+
+  // Exported permission: administer redirects.
+  $permissions['administer redirects'] = array(
+    'name' => 'administer redirects',
+    'roles' => array(
+      0 => 'administrator',
+    ),
+    'module' => 'redirect',
+  );
+
+  // Exported permission: administer url aliases.
+  $permissions['administer url aliases'] = array(
+    'name' => 'administer url aliases',
+    'roles' => array(
+      0 => 'administrator',
+    ),
+    'module' => 'path',
+  );
+
   // Exported permission: create docbook content.
   $permissions['create docbook content'] = array(
     'name' => 'create docbook content',
@@ -22,6 +49,15 @@ function docbookwiki_docbook_user_default_permissions() {
     'name' => 'create docbook_section content',
     'roles' => array(),
     'module' => 'node',
+  );
+
+  // Exported permission: create url aliases.
+  $permissions['create url aliases'] = array(
+    'name' => 'create url aliases',
+    'roles' => array(
+      0 => 'administrator',
+    ),
+    'module' => 'path',
   );
 
   // Exported permission: delete any docbook content.
@@ -78,6 +114,15 @@ function docbookwiki_docbook_user_default_permissions() {
     'name' => 'edit own docbook_section content',
     'roles' => array(),
     'module' => 'node',
+  );
+
+  // Exported permission: notify of path changes.
+  $permissions['notify of path changes'] = array(
+    'name' => 'notify of path changes',
+    'roles' => array(
+      0 => 'administrator',
+    ),
+    'module' => 'pathauto',
   );
 
   // Exported permission: use text format docbookwiki.
