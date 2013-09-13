@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Fuctions for converting a book from type 'book'
+ * Functions for converting a book from type 'book'
  * to 'docbook', and from 'docbook' to 'book'.
  */
 

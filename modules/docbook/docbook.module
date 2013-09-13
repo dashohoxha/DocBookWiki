@@ -133,3 +133,75 @@ function docbook_init()
 {
   drupal_add_css(drupal_get_path('module', 'docbook') . '/theme/docbook.css');
 }
+
+
+/**
+ * Implements hook_node_validate().
+ *
+ * Check that the dbw_id of a docbook is unique.
+ * Check that the dbw_id of a docbook_section
+ * is unique inside the book.
+ */
+function docbook_node_validate($node, $form, &$form_state) {
+  //dpm($node);  dpm($form);  dpm($form_state);  //debug
+
+  if ($node->type == 'docbook') {
+    $form_value = $form['dbw_id']['und'][0]['value'];
+    if ( empty($form_value['#default_value'])
+      or ($form_value['#default_value'] != $form_value['#value']) )
+      {
+        // check that no other docbook has this dbw_id
+        $query = new EntityFieldQuery();
+        $query
+          ->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'docbook')
+          ->propertyCondition('status', 1)
+          ->fieldCondition('dbw_id', 'value', $form_value['#value']);
+        $result = $query->execute();
+        if (!$result)  return;
+        $nids = array_keys($result['node']);
+        if (sizeof($nids) > 0) {
+          form_set_error('dbw_id', t('There is another docbook with this ID.'));
+        }
+      }
+  }
+
+  if ($node->type == 'docbook_section') {
+    $form_value = $form['dbw_id']['und'][0]['value'];
+    if ( empty($form_value['#default_value'])
+      or ($form_value['#default_value'] != $form_value['#value']) )
+      {
+        // check that no other section in this book has the same dbw_id
+        $bid = $node->book['bid'];
+        $query = "SELECT nid FROM {book} WHERE bid = :bid";
+        $node_ids = db_query($query, array(':bid' => $bid))->fetchCol();
+
+        $query = new EntityFieldQuery();
+        $query
+          ->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'docbook_section')
+          ->propertyCondition('status', 1)
+          ->propertyCondition('nid', $node_ids, 'IN')
+          ->fieldCondition('dbw_id', 'value', $form_value['#value']);
+        $result = $query->execute();
+        if (!$result)  return;
+        $nids = array_keys($result['node']);
+        if (sizeof($nids) > 0) {
+          form_set_error('dbw_id', t('There is another section in this book with this ID.'));
+        }
+      }
+  }
+}
+
+/**
+ * Update aliases of all the section of the given book.
+ * This is useful when the book id (or alias) has been changed.
+ */
+function docbook_update_section_aliases($bid) {
+  $query = "SELECT nid FROM {book} WHERE bid = :bid AND nid != :bid";
+  $nids = db_query($query, array(':bid' => $bid))->fetchCol();
+  foreach ($nids as $nid) {
+    $sect = node_load($nid);
+    node_save($sect);  // alias is updated automatically by autopath on node_save()
+  }
+}
