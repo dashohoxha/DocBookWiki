@@ -79,7 +79,8 @@ sed -i /etc/apache2/sites-available/$var-ssl \
 a2ensite $var $var-ssl
 
 ### restart services
-for SRV in php5-fpm memcached mysql nginx
+#for SRV in php5-fpm memcached mysql nginx
+for SRV in mysql apache2
 do
     service $SRV restart
 done
